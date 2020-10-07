@@ -12,12 +12,14 @@ The forecasts are already known to be very accurate for t = 1,2 and 3, so for th
 The persistence model, also called the naïve predictor, is often used as a reference as it is a good ground estimation of other algorithms,   
 and often used as a reference for determining the skill factor of a competing forecast model.
 
-<img src="assets/forecast.png" width="32%" /><img src="assets/accuracy.png" width="32%" /><img src="assets/persistence.png" width="32%" />
+<img src="assets/forecast.png" width="32%" /><img src="assets/accuracy.png" width="32%" /><img src="assets/persistence.png" width="32%/>
 
 After the persistence model is evaluated, historical weather data is used to try and improve upon the persistance model using Facebook Prophet and Random Forest Regressor.
 The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 
-<img src="assets/my_forecasts.png"/>
+**Updated to a 2 day forecast.**
+
+<img src="assets/my_forecasts.png" max-width="50%" "/>
 
 ## Data Dictionary
 
