@@ -19,7 +19,7 @@ The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 
 **Updated to a 2 day forecast.**
 
-<img src="assets/my_forecasts.png" max-width="50%" />
+<img src="assets/my_forecasts.png" width="50%" />
 
 ## Data Dictionary
 
