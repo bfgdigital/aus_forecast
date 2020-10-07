@@ -17,6 +17,8 @@ and often used as a reference for determining the skill factor of a competing fo
 After the persistence model is evaluated, historical weather data is used to try and improve upon the persistance model using Facebook Prophet and Random Forest Regressor.
 The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 
+<img src="assets/forecasts.png"/>
+
 ## Data Dictionary
 
 ####  temps.csv & (temps_multi.csv with multiple locations)
@@ -75,6 +77,11 @@ The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 | RandomForest | Random Forest prediction of tomorrows temperature. |
 | Bens Best Guess | Average of above three predictions. |
 | BOM Forecast | Bureau Of Meterology's forecast for tomorrows temperature. |
+
+####  Forecast Records
+| Field | Description |
+| :--- | :--- |
+| Multiple Files | A saved dump of api forecast data as it is not saved on the BOM |
 
 ## Important Links
 
