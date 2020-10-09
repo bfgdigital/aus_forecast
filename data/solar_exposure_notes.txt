@@ -2,7 +2,7 @@ Australian Government
 Bureau of Meteorology
 
 Notes for Daily Global Solar Exposure Climate Data
-Product code: IDCJAC0016 reference: 66769187
+Product code: IDCJAC0016 reference: 66949470
 ____________________________________________________________________
 
 ** Station Details **
@@ -99,7 +99,7 @@ _________________________________________
 
 
 
-Created on Sun 04 Oct 2020 22:25:08 PM GMT-00:00 from Climate Data Online, Bureau of Meteorology.
+Created on Fri 09 Oct 2020 01:03:51 AM GMT-00:00 from Climate Data Online, Bureau of Meteorology.
 http://www.bom.gov.au/climate/data
 
 Further information on this product: http://www.bom.gov.au/climate/austmaps/solar-radiation-glossary.shtml

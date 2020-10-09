@@ -1,8 +1,8 @@
 Australian Government
 Bureau of Meteorology
 
-Notes for Daily Rainfall Climate Data
-Product code: IDCJAC0009 reference: 66949217
+Notes for Daily Minimum Temperature Climate Data
+Product code: IDCJAC0011 reference: 66949458
 ____________________________________________________________________
 
 ** Station Details **
@@ -27,16 +27,16 @@ Column, 	Explanation
  3		Year
  4		Month
  5		Day
- 6		Daily rainfall (Millimetres)
- 7		Period over which daily rainfall was measured (days)
- 8		Quality of daily rainfall
+ 6		Daily minimum temperature (degrees Celsius)
+ 7		Period over which daily minimum temperature was measured (days)
+ 8		Quality of daily minimum temperature
 
 ** Important notes **
 
 1)  QUALITY FLAG DESCRIPTIONS
 
 Y: completed quality control and acceptable
-N: not yet completed quality control process, quality not assured
+N: not yet completed quality control process or date uncertain, quality not assured
 
 Climate data pass through a number of stages in quality control which occurs over a
 period of time.  Data are only included in this product if either one of the
@@ -44,7 +44,9 @@ following is true:
 i) If the Quality Flag = Y, then the data have completed the normal quality control
    process and we do not believe them to be suspect or wrong;
 ii) If the Quality Flag = N, then no significant errors have yet been detected,
-   although this may change during a later stage of the quality control process.
+   although this may change during a later stage of the quality control process. This 
+   also appplies if the data have completed the normal quality control process but there is 
+   some uncertainty about the date on which the temperature occured.
 
 2) GAPS AND MISSING DATA
 
@@ -60,7 +62,8 @@ gaps in the record for all elements at a particular site.
 Historically, if an observational site moved a relatively short distance (within about 1 to 2 km)
 it may have continued to use the same station number.  Changes may have occurred in
 instrumentation and/or observing practices over the period included in a dataset, which
-may have an effect on the long-term record. In recent years many stations have had observers
+may have an effect on the long-term record. Observations of temperature at some (but not all) locations 
+prior to 1910 may have been made with non-standard equipment. In recent years many stations have had observers
 replaced by automatic weather stations (AWSs), either completely or at certain times of the day.
 
 4) LATITUDES AND LONGITUDES
@@ -74,8 +77,9 @@ positioning may be available upon request (see contact details).
 For a part of the year some Australian States adopt Daylight Savings Time (DST). The
 changeover dates vary from State to State and year to year. More information can be
 found at:   http://www.bom.gov.au/climate/averages/tables/daysavtm.shtml
-Apart from some early historical observations, daily rainfall observations are made at 
-9am local time and record the precipitation which has fallen in the previous 24 hours.
+The majority of maximum and minimum temperature data have been recorded at 9am local time.
+The minimum temperature measured at that time is recorded against the day on which it was measured,
+while the maximum temperature is recorded against the previous day.
 
 6) COPYRIGHT
 
@@ -98,7 +102,7 @@ http://www.bom.gov.au/climate/how/contacts.shtml
 
 _________________________________________
 
-Created on Fri 09 Oct 2020 00:59:28 AM GMT-00:00 from Climate Data Online, Bureau of Meteorology.
+Created on Fri 09 Oct 2020 01:03:47 AM GMT-00:00 from Climate Data Online, Bureau of Meteorology.
 http://www.bom.gov.au/climate/data
 
-Further information on this product: http://www.bom.gov.au/climate/cdo/about/about-rain-data.shtml
+Further information on this product: http://www.bom.gov.au/climate/cdo/about/about-airtemp-data.shtml
