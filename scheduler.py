@@ -53,6 +53,6 @@ for name,url in locations.items():
     af = af.reindex(sorted(af.columns), axis=1)
     # Add new data to forecast and push back into DB
     db = db.append(af)
-    db.drop_duplicates(subset=None, keep='first', inplace=True, ignore_index=True) # In the case of pulling x2 in one day.
+    db.drop_duplicates(subset=None, keep='last', inplace=True, ignore_index=True) # In the case of pulling x2 in one day.
     db.to_sql('bom-weather', engine, if_exists = 'replace', index=False)
 print('Done')
