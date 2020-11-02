@@ -17,7 +17,7 @@ and often used as a reference for determining the skill factor of a competing fo
 After the persistence model is evaluated, historical weather data is used to try and improve upon the persistance model using Facebook Prophet and Random Forest Regressor.
 The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 
-* [Part 1 is now live](https://github.com/bfgdigital/BOM_Weather) - bom_app.py & scheduler.py on Heroku via Streamlit & Postgres.
+* [Part 1 is now live](http://bom-weather.herokuapp.com) - bom_app.py & scheduler.py on Heroku via Streamlit & Postgres.
 
 **Updated to a 2 day forecast.**
 
