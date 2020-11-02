@@ -1,21 +1,19 @@
-# Web App
-import streamlit as st
+#################################
+# Imports
+################################
 
-# Maths and Dataframes
-import pandas as pd
-import numpy as np
-
-# Time Functions
-import datetime as dt
-
-# API fetching
-import requests
+import streamlit as st # Web App
+import pandas as pd # Dataframes
+import numpy as np # Maths functions
+import datetime as dt # Time Functions
+import requests # API fetching
+from sklearn.metrics import mean_squared_error # Mean Squared Error Function (Needs np.sqrt for units)
 
 # Charting
 from matplotlib import pyplot as plt
 import seaborn as sns
 
-# SQL Stuff
+# SQL and Credentials
 import os
 import dotenv # Protect db creds
 dotenv.load_dotenv()
@@ -23,11 +21,12 @@ import sqlalchemy
 
 # SQL Connection
 DATABASE_URL = os.environ.get('DATABASE_URL')
-engine = sqlalchemy.create_engine(DATABASE_URL)
-
-# Import DB
-db = pd.read_sql('bom-weather', engine) 
-
+# Cache func for loading Database.
+@st.cache(allow_output_mutation=True)
+def get_database_connection():
+    engine = sqlalchemy.create_engine(DATABASE_URL)
+    db = pd.read_sql('bom-weather', engine)
+    return db
 
 # Define Times (easier to just make a string format time here.)
 today = dt.date.today()
@@ -39,8 +38,11 @@ tomorrowstr = tomorrow.strftime("%Y-%m-%d")
 day_after_tomorrow = dt.date.today() + pd.DateOffset(days=2)
 day_after_tomorrowstr = day_after_tomorrow.strftime("%Y-%m-%d")
 
-# Set DB Index
-db.index = pd.to_datetime(db['date'])
+# Load Data
+data_load_state = st.text('Loading data...') # Loading message
+db = get_database_connection() # pull DB data.
+data_load_state.text('Loading data...done!') # Data loaded message
+db.index = pd.to_datetime(db['date']) # Set DB Index
 
 #################################
 # DataFrame
@@ -55,11 +57,12 @@ today4 = db[db['forecast'] == 4]
 today5 = db[db['forecast'] == 5]
 today6 = db[db['forecast'] == 6]
 
+# Set Index
 dates_index = list(set(db['issue']))
-dates_index.sort()
+dates_index.sort() # Sort Index
 
+# Dataframe for TF
 tf = pd.DataFrame(None)
-
 tf['today+0'] = today0['temp_max'].reset_index(drop=True)
 tf['today+1'] = today1['temp_max'].reset_index(drop=True)
 tf['today+2'] = today2['temp_max'].reset_index(drop=True)
@@ -132,10 +135,8 @@ tf.index = dates_index
 #################################
 # RMSE
 ################################
-
-from sklearn.metrics import mean_squared_error
-
-accuracy = pd.DataFrame()
+data_load_state.text('Loading data...done!')
+# Assign (Root) Mean Squared Error
 rmse_today1 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+1'].dropna())],fac['today+1'].dropna()))]
 rmse_today2 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+2'].dropna())],fac['today+2'].dropna()))]
 rmse_today3 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+3'].dropna())],fac['today+3'].dropna()))]
@@ -143,6 +144,7 @@ rmse_today4 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+4'].dro
 rmse_today5 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+5'].dropna())],fac['today+5'].dropna()))]
 rmse_today6 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+6'].dropna())],fac['today+6'].dropna()))]
 
+# Assign error vals to a df
 accuracy = pd.DataFrame()
 accuracy['1 Day Forecast'] = rmse_today1
 accuracy['2 Day Forecast'] = rmse_today2
@@ -158,12 +160,14 @@ accuracy['6 Day Forecast'] = rmse_today6
 # Persistance Mechanism subtract each max temp from the one before.
 pmodel  = pd.Series([today - yesterday for today,yesterday in zip(tf['today+0'],tf['today+0'][1:])],index=tf.index[:len(tf.index)-1])
 
+# Assign pmodel vals to series.
 persistence = pd.DataFrame()
 persistence['Persistence Accuracy'] = pmodel.values
 for i in range(1,7):
     persistence[str(i)+' Day Forecast'] = pd.Series(fac['today+'+str(i)].values)
 persistence.index = dates_index[:len(dates_index)-1]
 
+#Assign RMSE value for pmodel
 persistence_rmse = np.sqrt(mean_squared_error(pmodel,fac['today+0'][:len(fac)-1]))
 
 
@@ -190,7 +194,7 @@ st.write("""
 # Summary
 st.text(f"Today\'s date is: {today}")
 st.text(f"New forecasts:	{len(db)}, Starting on: {db['issue'][0]}, Ending on: {db['issue'][len(db)-1][:10]}")
-todays_forecast = f"#### Today's forecast: \n >{db['extended_text'][0]}"
+todays_forecast = f"#### Today's forecast: \n >*{db['extended_text'][0]}*"
 st.markdown(todays_forecast)
 
 # Display Previous Data Heatmap Description
@@ -207,6 +211,7 @@ st.write("""
 #### 1.2: Heatmap of Forecast Accuracy   
 This chart shows how accurate the forecasts were against the actual temperature. There is no need to read down and to the left, the cells show how accurate the forecast was, once the date of the forecast has passed. As the days in the bottom right corner have not occurred yet, (this coming week) there is no way to evaluate the accuracy.
 """)
+
 # Variation Heatmap
 heat_map(fac,"Forecast Variation (0 = 100% Accurate)")
 
@@ -226,6 +231,7 @@ As the date forecast gets further away, the average error increases.
 """)
 st.line_chart(accuracy.T)
 
+# PART 2
 st.write("""
 ## PART 2: Persistence
 Evaluating against Weather(t+i) = Weather(t).
@@ -238,9 +244,9 @@ st.write("""
 col1, col2 = st.beta_columns([2, 2])
 
 col1.subheader("Difference in ºC \n from the previous day")
-col1.write(pmodel)
+col1.dataframe(pmodel)
 
-peristance_info = f"#### Persistence RMSE: \n {persistence_rmse} \n >This is the current mean error of the persistence model."
+peristance_info = f"#### Persistence RMSE: \n **{persistence_rmse}** \n >This is the current mean error of the persistence model."
 col2.subheader("Persistence Mean Error")
 col2.markdown(peristance_info)
 

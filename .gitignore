@@ -1,3 +1,7 @@
 .DS_Store
 .ipynb_checkpoints
 1Heroku
+Procfile
+setup.sh
+runtime.txt
+.env
