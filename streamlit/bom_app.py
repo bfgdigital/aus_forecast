@@ -240,7 +240,7 @@ col1, col2 = st.beta_columns([2, 2])
 col1.subheader("Difference in ºC \n from the previous day")
 col1.write(pmodel)
 
-peristance_info = f"#### Persistence RMSE: \n {persistence_rmse} \n >This is the current mean error of the persistence model."
+peristance_info = f"#### Persistence RMSE: \n #{persistence_rmse} \n >This is the current mean error of the persistence model."
 col2.subheader("Persistence Mean Error")
 col2.markdown(peristance_info)
 
