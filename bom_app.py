@@ -25,7 +25,8 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 @st.cache(allow_output_mutation=True)
 def get_database_connection():
     engine = sqlalchemy.create_engine(DATABASE_URL)
-    db = pd.read_sql('bom-weather', engine)
+    db = pd.read_sql_query('SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather";',engine)
+#     db = pd.read_sql('bom-weather', engine) # Don't need whole db
     return db
 
 # Define Times (easier to just make a string format time here.)
