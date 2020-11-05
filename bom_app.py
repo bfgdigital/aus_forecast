@@ -39,9 +39,7 @@ day_after_tomorrow = dt.date.today() + pd.DateOffset(days=2)
 day_after_tomorrowstr = day_after_tomorrow.strftime("%Y-%m-%d")
 
 # Load Data
-data_load_state = st.text('Loading data...') # Loading message
 db = get_database_connection() # pull DB data.
-data_load_state.text('Loading data...done!') # Data loaded message
 db.index = pd.to_datetime(db['date']) # Set DB Index
 
 #################################
@@ -135,7 +133,7 @@ tf.index = dates_index
 #################################
 # RMSE
 ################################
-data_load_state.text('Loading data...done!')
+
 # Assign (Root) Mean Squared Error
 rmse_today1 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+1'].dropna())],fac['today+1'].dropna()))]
 rmse_today2 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+2'].dropna())],fac['today+2'].dropna()))]
@@ -194,7 +192,7 @@ st.write("""
 # Summary
 st.text(f"Today\'s date is: {today}")
 st.text(f"New forecasts:	{len(db)}, Starting on: {db['issue'][0]}, Ending on: {db['issue'][len(db)-1][:10]}")
-todays_forecast = f"#### Today's forecast: \n >*{db['extended_text'][0]}*"
+todays_forecast = f"#### Today's forecast: \n >*{db['extended_text'][-1]}*"
 st.markdown(todays_forecast)
 
 # Display Previous Data Heatmap Description
