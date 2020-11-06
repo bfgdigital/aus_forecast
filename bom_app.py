@@ -15,6 +15,7 @@ import seaborn as sns
 
 # SQL and Credentials
 import os
+import io
 import dotenv # Protect db creds
 dotenv.load_dotenv()
 import sqlalchemy
@@ -25,7 +26,20 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 @st.cache(allow_output_mutation=True)
 def get_database_connection():
     engine = sqlalchemy.create_engine(DATABASE_URL)
-    db = pd.read_sql_query('SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather";',engine)
+    query = 'SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather"'
+    
+    # Store db in memory for speed up?
+    copy_sql = "COPY ({query}) TO STDOUT WITH CSV {head}".format(
+       query=query, head="HEADER"
+    )
+    conn = engine.raw_connection()
+    cur = conn.cursor()
+    store = io.StringIO()
+    cur.copy_expert(copy_sql, store)
+    store.seek(0)
+    db = pd.read_csv(store)
+    
+#     db = pd.read_sql_query('SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather";',engine)
 #     db = pd.read_sql('bom-weather', engine) # Don't need whole db
     return db
 
