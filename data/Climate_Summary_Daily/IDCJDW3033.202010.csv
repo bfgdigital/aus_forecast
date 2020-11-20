@@ -1,0 +1,15 @@
+"Daily Weather Observations for Melbourne (Olympic Park), Victoria for October 2020"
+"Prepared at 23:36 UTC on Thursday  8 October 2020   IDCJDW3033.202010"
+"Copyright 2003 Commonwealth Bureau of Meteorology"
+"Observations were drawn from Melbourne (Olympic Park) {station 086338}"
+
+,"Date","Minimum temperature (°C)","Maximum temperature (°C)","Rainfall (mm)","Evaporation (mm)","Sunshine (hours)","Direction of maximum wind gust ","Speed of maximum wind gust (km/h)","Time of maximum wind gust","9am Temperature (°C)","9am relative humidity (%)","9am cloud amount (oktas)","9am wind direction","9am wind speed (km/h)","9am MSL pressure (hPa)","3pm Temperature (°C)","3pm relative humidity (%)","3pm cloud amount (oktas)","3pm wind direction","3pm wind speed (km/h)","3pm MSL pressure (hPa)"
+,2020-10-1,9.4,19.5,1.8,,,NNW,37,16:48,13.3,63,,WNW,13,1017.1,19.2,37,,NW,11,1015.4
+,2020-10-2,12.8,26.0,0,,,NNW,54,12:19,17.4,44,,N,20,1019.1,25.1,40,,N,22,1016.7
+,2020-10-3,17.4,29.4,0,,,N,57,14:32,22.2,40,,N,26,1018.3,28.4,32,,N,31,1013.4
+,2020-10-4,13.5,29.5,0,,,SSW,44,17:27,21.0,42,,W,9,1012.7,28.4,34,,N,19,1006.8
+,2020-10-5,9.1,12.7,12.8,,,SSW,39,00:05,9.1,100,,SSE,11,1018.6,12.0,72,,S,13,1021.8
+,2020-10-6,8.9,12.6,1.0,,,SSW,33,11:55,11.1,59,,SSE,11,1025.0,11.7,65,,S,13,1023.6
+,2020-10-7,10.1,17.2,3.2,,,SSW,17,16:39,11.5,100,, ,Calm,1019.7,15.0,90,,SSW,6,1015.3
+,2020-10-8,11.4,16.9,5.4,,,N,59,13:52,15.0,76,,N,22,1003.0,15.3,66,,N,33,1001.4
+,2020-10-9,11.7,,1.2,,,,,,12.7,70,,W,15,1013.9,,,,,,

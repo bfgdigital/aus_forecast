@@ -1,16 +1,18 @@
-# Persistance Model of BOM Weather
+# BOM's Melbourne Forecast Accuracy
 
 ## Introduction
 
-We often get a 7 day weather forecast but don't often go back to see how accurate the predictions were for 7 days ago.
-This project looks to explore how accurate the weather forecast is according to a what is known as the Persistance Model.
-The Persistance Model hypothesis for the weather domain is that "The weather tomorrow will be the same as today",   
-or in mathematical terms Weather(t+1) = Weather(t), (t being today, or time).
+####Evaluating the accuracy of the Bureau of Meteorology 6 day forecast.
+The following information is an examination of the Bureau of Meteorology's 6-day forecast.
 
-The forecasts are already known to be very accurate for t = 1,2 and 3, so for this project I will be looking at t+7.
+It's hard to know if a forecast is good because it depends on how 'good' is measured. Is accurate to within 1º good? How about within 5º?
 
-The persistence model, also called the naïve predictor, is often used as a reference as it is a good ground estimation of other algorithms,   
-and often used as a reference for determining the skill factor of a competing forecast model.
+This project is evaluating how accurate forecasts are, depending on how many days away the forecast is. So instead of comparing to the historical temperatures, this will just look at how much the forecast changes as the date gets closer.
+
+Firstly, it looks at the error (Root Mean Squared Error or RMSE) of how correct/incorrect forecasts are by day (eg: how similar is the 3-day forecast compared to the same day forecast).
+Secondly, it evaluates at how accurate the forecast is against a naive forecasting approach, in this case the persistence model which is simply "The weather tomorrow will be the same as today" ie: the temperature will persist. This is a good way to evaluate model accuracy as this form of forecast naturally varies with changing weather, which makes it comparable to the difficulties typically faced in weather forecasting.
+
+The persistence model, also called the naïve predictor, is often used as a reference as it is a good ground estimation of other algorithms, and often used as a reference for determining the skill factor of a competing forecast model.
 
 <img src="assets/forecast.png" width="32%" /><img src="assets/accuracy.png" width="32%" /><img src="assets/persistence.png" width="32%" />
 
@@ -82,10 +84,6 @@ The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 | Bens Best Guess | Average of above three predictions. |
 | BOM Forecast | Bureau Of Meterology's forecast for tomorrows temperature. |
 
-####  Forecast Records
-| Field | Description |
-| :--- | :--- |
-| Multiple Files | A saved dump of api forecast data as it is not saved on the BOM |
 
 ## Important Links
 

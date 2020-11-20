@@ -23,15 +23,14 @@ todaystr = today.strftime("%Y-%m-%d")
 ## More URL's can be found via https://weather.bom.gov.au/search & talking the location reference from the URL
 ## Eg: https://weather.bom.gov.au/location/r1r5rjm-clonbinane << 'r1r5rjm'
 locations = {
-'Melbourne' : 'https://api.weather.bom.gov.au/v1/locations/r1r143/forecasts/daily',
+'Melbourne' : 'https://api.weather.bom.gov.au/v1/locations/r1r0fsn/forecasts/daily',
 } 
 
 # Fetch Location from location dicts.
-for name,url in locations.items():
-    response = requests.get(url)
-    weather_dict = response.json() # API Forecast as json
-    af = pd.DataFrame(weather_dict['data']) # Dict has 'data' and 'meta'
-    # EDA
+for name, url in locations.items():
+    response = requests.get(url).json()  # API Forecast as json
+    af = pd.DataFrame(response['data'])  # Dict has 'data' and 'meta'
+    # Process json data
     # Set forecast Dates
     af['issue'] = today
     af['forecast'] = [i for i in range(len(af))]
@@ -40,7 +39,7 @@ for name,url in locations.items():
     # Split rain
     af['rain_min'] = [row['amount']['min'] for row in af['rain']]
     af['rain_max'] = [row['amount']['max'] for row in af['rain']]
-    af['rain_max'].fillna(0,inplace=True) # Rain Max is na if no rain forecast.
+    af['rain_max'].fillna(0, inplace=True)  # Rain Max is na if no rain forecast.
     af['rain_prob'] = [row['chance'] for row in af['rain']]
     # Split UV
     af['uv_cat'] = [row['category'] for row in af['uv']]
@@ -49,10 +48,11 @@ for name,url in locations.items():
     af['sunrise'] = [row['sunrise_time'] for row in af['astronomical']]
     af['sunset'] = [row['sunset_time'] for row in af['astronomical']]
     # Clean Up
-    af.drop(['rain','uv','astronomical','now'],axis=1,inplace=True)
+    af.drop(['rain', 'uv', 'astronomical', 'now'], axis=1, inplace=True)
     af = af.reindex(sorted(af.columns), axis=1)
     # Add new data to forecast and push back into DB
     db = db.append(af)
-    db.drop_duplicates(subset=None, keep='last', inplace=True, ignore_index=True) # In the case of pulling x2 in one day.
+    db.drop_duplicates(subset=db.columns.difference(['date']), keep='last', inplace=True, ignore_index=True) # In the case of pulling x2 in one day.
     db.to_sql('bom-weather', engine, if_exists = 'replace', index=False)
+    print(f'Added to db without problems.')
 print('Done')
