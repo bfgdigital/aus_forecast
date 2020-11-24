@@ -6,11 +6,7 @@ import streamlit as st  # Web App
 import pandas as pd  # Dataframes
 import numpy as np  # Maths functions
 import datetime as dt  # Time Functions
-import sqlalchemy  # SQL and Credentials
-import os
-import io
-import dotenv  # Protect db creds
-dotenv.load_dotenv()
+from datetime import datetime
 
 # Charting
 import seaborn as sns
@@ -19,30 +15,14 @@ from matplotlib import pyplot as plt
 # SKLearn
 from sklearn.metrics import mean_squared_error  # Mean Squared Error Function (Needs np.sqrt for units)
 
-# SQL Connection
-DATABASE_URL = os.environ.get('DATABASE_URL')
-# Cache func for loading Database.
-
 
 @st.cache(allow_output_mutation=True)
-def get_database_connection():
-    engine = sqlalchemy.create_engine(DATABASE_URL)
-    query = 'SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather"'
-    
-    # Store db in memory for speed up?
-    copy_sql = "COPY ({query}) TO STDOUT WITH CSV {head}".format(
-       query=query, head="HEADER"
-    )
-    conn = engine.raw_connection()
-    cur = conn.cursor()
-    store = io.StringIO()
-    cur.copy_expert(copy_sql, store)
-    store.seek(0)
-    mem_stored_db = pd.read_csv(store)
-    
-#     db = pd.read_sql_query('SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather";',engine)
-#     db = pd.read_sql('bom-weather', engine)  # Don't need whole db
-    return mem_stored_db
+def get_forecast_dataframe():
+
+    tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+    fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+    last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
+    return tf, fac, last_row
 
 
 # Define Times (easier to just make a string format time here.)
@@ -56,36 +36,10 @@ day_after_tomorrow = dt.date.today() + pd.DateOffset(days=2)
 day_after_tomorrowstr = day_after_tomorrow.strftime("%Y-%m-%d")
 
 # Load Data
-db = get_database_connection()  # pull DB data.
-db.index = pd.to_datetime(db['date'])  # Set DB Index
+tf, fac, last_row = get_forecast_dataframe()  # pull DB data.
+original_index = tf.index
+dates_index = pd.to_datetime(tf.index)
 
-#################################
-# DataFrame
-################################
-
-# Build DataFrame from db
-today0 = db[db['forecast'] == 0]
-today1 = db[db['forecast'] == 1]
-today2 = db[db['forecast'] == 2]
-today3 = db[db['forecast'] == 3]
-today4 = db[db['forecast'] == 4]
-today5 = db[db['forecast'] == 5]
-today6 = db[db['forecast'] == 6]
-
-dates_index = list(set(db['issue']))  # Set Index
-dates_index.sort()  # Sort Index
-
-# Dataframe for Today + Forecast
-tf = pd.DataFrame(None)
-tf['today+0'] = today0['temp_max'].reset_index(drop=True)
-tf['today+1'] = today1['temp_max'].reset_index(drop=True)
-tf['today+2'] = today2['temp_max'].reset_index(drop=True)
-tf['today+3'] = today3['temp_max'].reset_index(drop=True)
-tf['today+4'] = today4['temp_max'].reset_index(drop=True)
-tf['today+5'] = today5['temp_max'].reset_index(drop=True)
-tf['today+6'] = today6['temp_max'].reset_index(drop=True)
-
-tf.index = dates_index
 
 #################################
 # Heatmap
@@ -105,48 +59,6 @@ def heat_map(data, title):
     ax.figure.axes[0].xaxis.label.set_size(14)
     return st.pyplot(fig);
 
-
-#################################
-# Accuracy
-################################
-
-# Create Accuracy Table
-tf.index = pd.to_datetime(tf.index)  # make index a datetime.
-
-# Accuracy Mechanism: Compare forecast to actual Temp.
-fac = pd.DataFrame()
-counter = list(range(len(tf)))
-columns = list(tf.columns)
-
-for i in counter:
-    # 7 day forecast inc today, so len can't exceed 7
-    if i < 7:
-        window = i 
-        j = i
-    else: 
-        window = 6
-        j = 6
-    
-    # Start date at most recent row
-    actual_date = tf.index[-1]  # start with the last day
-    window_date = actual_date - pd.DateOffset(days=window)  # Number of days in the past can't be more than those forecast
-    row_0 = tf.index[0]  # We want to end when window date is equal to row_0.
-    
-    tf_list = []  # temporary holder of weeks values.
-    while window_date >= row_0:
-        true_temp = int(tf.loc[actual_date][0])  # True temperature recorded on day
-        predicted_temp = int(tf.loc[window_date][window])  # data predicted on value of window
-        difference = true_temp - predicted_temp
-        # loop 
-        actual_date -= pd.DateOffset(days=1)  # take off 1 day.
-        window_date -= pd.DateOffset(days=1)  # take off 1 day.
-        # append
-        tf_list.append(difference)    
-    # Add list to df as series    
-    fac[columns[j]] = pd.Series(tf_list[::-1])  # Add list backwards.
-        
-fac.index = dates_index
-tf.index = dates_index
 
 #################################
 # RMSE
@@ -183,53 +95,10 @@ persistence = pd.DataFrame()
 persistence['Persistence Accuracy'] = pmodel.values
 for i in range(1, 7):
     persistence[str(i)+' Day Forecast'] = pd.Series(fac['today+'+str(i)].values)
-persistence.index = dates_index[:len(dates_index)-1]
+persistence.index = original_index[:len(tf)-1]
 
 # Assign RMSE value for pmodel
 persistence_rmse = np.sqrt(mean_squared_error(pmodel, fac['today+0'][:len(fac)-1]))
-
-#################################
-# Accuracy
-################################
-
-# Create Accuracy Table
-tf.index = pd.to_datetime(tf.index)  # make index a datetime.
-
-# Accuracy Mechanism: Compare forecast to actual Temp.
-fac = pd.DataFrame()
-counter = list(range(len(tf)))
-columns = list(tf.columns)
-
-for i in counter:
-    # 7 day forecast inc today, so len can't exceed 7
-    if i < 7:
-        window = i
-        j = i
-    else:
-        window = 6
-        j = 6
-
-    # Start date at most recent row
-    actual_date = tf.index[-1]  # start with the last day
-    window_date = actual_date - pd.DateOffset(
-        days=window)  # Number of days in the past can't be more than those forecast
-    row_0 = tf.index[0]  # We want to end when window date is equal to row_0.
-
-    tf_list = []  # temporary holder of weeks values.
-    while window_date >= row_0:
-        true_temp = int(tf.loc[actual_date][0])  # True temperature recorded on day
-        predicted_temp = int(tf.loc[window_date][window])  # data predicted on value of window
-        difference = true_temp - predicted_temp
-        # loop
-        actual_date -= pd.DateOffset(days=1)  # take off 1 day.
-        window_date -= pd.DateOffset(days=1)  # take off 1 day.
-        # append
-        tf_list.append(difference)
-        # Add list to df as series
-    fac[columns[j]] = pd.Series(tf_list[::-1])  # Add list backwards.
-
-fac.index = dates_index
-tf.index = dates_index
 
 #################################
 # VS RMSE
@@ -244,6 +113,7 @@ persistence_vs['5 Day Error'] = accuracy['5 Day Forecast'] - persistence_rmse
 persistence_vs['6 Day Error'] = accuracy['6 Day Forecast'] - persistence_rmse
 
 persistence_vs.index = ["BOM Error vs Persistence Error"]
+
 #################################
 #################################
 # Display
@@ -260,11 +130,11 @@ The following information is an examination of the Bureau of Meteorology's 6-day
 It's hard to know if a forecast is good because it depends on how *'good'* is measured.
 Is accurate to within 1º good? How about within 5º?   
 
-This project is evaluating how accurate forecasts are, depending on how many days away the forecast is.
+This project is evaluating how accurate forecasts are, ***depending on how many days away the forecast is.***
 So instead of comparing to the historical temperatures, this will just look at how much the forecast changes as the date gets closer.   
 
 Firstly, it looks at the error (Root Mean Squared Error or RMSE) of how correct/incorrect forecasts are by day (eg: how similar is the 3-day forecast compared to the same day forecast).    
-Secondly, it evaluates at how accurate the forecast is against a naive forecasting approach, in this case the persistence model which is simply "The weather tomorrow will be the same as today" ie: the temperature will persist. 
+Secondly, it evaluates at how accurate the forecast is against a naive forecasting approach, in this case the persistence model which is simply *"The weather tomorrow will be the same as today"* ie: the temperature will persist. 
 This is a good way to evaluate model accuracy as this form of forecast naturally varies with changing weather, which makes it comparable to the difficulties typically faced in weather forecasting.
 """)
 
@@ -273,8 +143,8 @@ st.write("""
 """)
 # Summary
 st.text(f"Today\'s date is: {today}")
-st.text(f"New forecasts:	{len(db)}, Starting on: {db['issue'][0]}, Ending on: {db['issue'][len(db)-1][:10]}")
-todays_forecast = f"#### Today's forecast: \n >*{db['extended_text'][-1]}*"
+st.text(f"New forecasts:	{len(tf)}, Starting on: {tf.index[0]}, Ending on: {tf.index[-1]}")
+todays_forecast = f"#### Today's forecast: \n >*{last_row['extended_text'][0]}*"
 st.markdown(todays_forecast)
 
 # Display Previous Data Heatmap Description
@@ -320,16 +190,15 @@ This compares the accuracy of the forecast against the naive model of "Tomorrow'
 """)
 
 st.write("""
-#### 2.1: Persistence Accuracy +/- ºC above and below forecast
+#### 2.1: Persistence Mean Error +/- ºC above and below forecast
 """)
 
 persistence_info = f"#### Persistence RMSE: \n **{persistence_rmse}** \n >This is the current mean error of the persistence model."
-st.subheader("Persistence Mean Error")
 st.markdown(persistence_info)
 
 st.write("""
 #### 2.2: Persistence Variation by Day 
-Displayed as a bar chart
+Each bar is the difference in temperature from the day before.
 """)
 # Persistence DataFrame
 st.bar_chart(pmodel)
@@ -355,7 +224,7 @@ st.dataframe(persistence_vs)
 # Chart accuracy
 st.write("""
 #### 2.5: BOM VS Persistence
-This chart shows (Persistence RMSE - BOM RMSE), in other words, how much more accurate is the BOM than Persistence.
+This chart shows (BOM RMSE - Persistence RMSE), in other words, how much more accurate is the BOM than Persistence.
 As the forecast error increases with each day further into the future that is predicted, the difference in error between the models becomes smaller.
 Here you can see see that for 1 day into the future, the BOM is over +/-3º more accurate than a persistence model, but by the 6th day, it's less than 1º more accurate.
 """)
@@ -371,10 +240,6 @@ st.write("""
 #### DATA Sources 
 - Data Comes From: ftp://ftp.bom.gov.au/anon/gen/fwo/
 - Melbourne Forecast File: ftp://ftp.bom.gov.au/anon/gen/fwo/IDV10450.xml
-
-The url for the BOM API is:
-https://api.weather.bom.gov.au/v1/locations/r1r143/forecasts/daily   
-Be Aware that the update is adjusted every 10 mins.
 """)
 
 st.write(""" 
