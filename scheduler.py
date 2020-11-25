@@ -11,7 +11,7 @@ from tasks.prophet_forecaster import build_prophet_forecaster
 
 def main():
     print('LOG: Starting - Retrieve Forecasts from API')
-    # retrieve_forecasts()  # Update the database.
+    retrieve_forecasts()  # Update the database.
     print('LOG: Complete - Retrieve Forecasts from API')
     print('LOG: Starting - Build Forecast Dataframe')
     build_forecast_dataframe()  # Build and save a dataframe of the forecasts
