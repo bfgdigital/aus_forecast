@@ -1,6 +1,5 @@
 .DS_Store
 .ipynb_checkpoints
 .env
-development
-.gith
-.gitg
+development/
+.idea
