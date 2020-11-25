@@ -14,16 +14,15 @@ Secondly, it evaluates at how accurate the forecast is against a naive forecasti
 
 The persistence model, also called the naïve predictor, is often used as a reference as it is a good ground estimation of other algorithms, and often used as a reference for determining the skill factor of a competing forecast model.
 
-<img src="static/charts/forecast_heatmap.png" width="32%" /><img src="static/charts/accuracy.png" width="32%" /><img src="static/charts/persistence.png" width="32%" />
+<img src="static/images/forecast_heatmap.png" width="32%" /><img src="static/images/accuracy.png" width="32%" /><img src="static/images/persistence.png" width="32%" />
 
 After the persistence model is evaluated, historical weather data is used to try and improve upon the persistance model using Facebook Prophet and Random Forest Regressor.
 The new forecast is saved to ben_vs_bom.csv and will be built upon over time.
 
-* [Part 1 is now live](http://bom-weather.herokuapp.com) - bom_app.py & scheduler.py on Heroku via Streamlit & Postgres.
-
+* [Part 1 is now live at ausforecast.app](https://ausforecast.app)
 **Updated to a 2 day forecast.**
 
-<img src="static/charts/my_forecasts.png" width="70%" />
+<img src="static/images/my_forecasts.png" width="70%" />
 
 ## Data Dictionary
 

@@ -35,9 +35,13 @@ def get_database_connection():
 
 def build_forecast_dataframe():
 
+    print('Beginning to build the forecast database')
+
     # Load Data
     db = get_database_connection()  # pull DB data.
     db.index = pd.to_datetime(db['date'])  # Set DB Index
+    dates_index = list(set(db['issue']))  # create string based index
+    dates_index.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))  # Sort string indexes as dates
 
     #################################
     # Latest Info
@@ -59,9 +63,6 @@ def build_forecast_dataframe():
     today5 = db[db['forecast'] == 5]
     today6 = db[db['forecast'] == 6]
 
-    dates_index = list(set(db['issue']))  # Set Index
-    dates_index.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))  # Sort an index of dates
-
     # Dataframe for Today + Forecast
     tf = pd.DataFrame(None)
     tf['today+0'] = today0['temp_max'].reset_index(drop=True)
@@ -72,10 +73,10 @@ def build_forecast_dataframe():
     tf['today+5'] = today5['temp_max'].reset_index(drop=True)
     tf['today+6'] = today6['temp_max'].reset_index(drop=True)
 
-    tf.index = dates_index
+    tf.index = dates_index # set the index to the dataframe.
 
     # Create Accuracy Table
-    tf.index = pd.to_datetime(tf.index)  # make index a datetime.
+    tf.index = pd.to_datetime(tf.index)  # Change the new index back into datetime.
 
     # Accuracy Mechanism: Compare forecast to actual Temp.
     fac = pd.DataFrame()
@@ -110,8 +111,12 @@ def build_forecast_dataframe():
             # Add list to df as series
         fac[columns[j]] = pd.Series(tf_list[::-1])  # Add list backwards.
 
-    tf.index = dates_index
-    fac.index = dates_index
+    tf.index = dates_index  # change the index back into string format
+    fac.index = dates_index  # same index
+
+    #################################
+    # Save to file
+    ################################
 
     tf.to_csv('./static/data/forecast_dataframe.csv')
     fac.to_csv('./static/data/accuracy_dataframe.csv')
