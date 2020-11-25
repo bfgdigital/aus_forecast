@@ -66,7 +66,7 @@ def retrieve_forecasts():
             db = db.append(af)
             db.drop_duplicates(subset=db.columns.difference(['date']), keep='last', inplace=True,
                                ignore_index=True)  # In the case of pulling x2 in one day.
-            # db.to_sql('bom-weather', engine, if_exists='replace', index=False)
+            db.to_sql('bom-weather', engine, if_exists='replace', index=False)
             print(f'LOG: Added new rows to db without problems.')
 
     print('LOG: Forecasts retrieved and stored without errors.', '\n')
