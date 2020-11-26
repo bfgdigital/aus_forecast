@@ -15,13 +15,13 @@ from matplotlib import pyplot as plt
 # SKLearn
 from sklearn.metrics import mean_squared_error  # Mean Squared Error Function (Needs np.sqrt for units)
 
+tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
 
-# @st.cache(allow_output_mutation=True)
+
+@st.cache()  # allow_output_mutation=True
 def get_forecast_dataframe():
-
-    tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-    fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-    last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
     return tf, fac, last_row
 
 
@@ -209,6 +209,7 @@ st.write("""
 Here you can compare how accurate the persistence model was vs the BOM forecast for any given day.
 As the days get further away, the accuracy of the persistence and BOM forecast becomes more even.
 """)
+
 # Display a Heatmap of the Persistence Accuracy
 heat_map(persistence, "Persistence (far left) vs Forecast")
 
@@ -220,7 +221,6 @@ however
 # """)
 st.dataframe(persistence_vs)
 
-
 # Chart accuracy
 st.write("""
 #### 2.5: BOM VS Persistence
@@ -228,6 +228,8 @@ This chart shows (BOM RMSE - Persistence RMSE), in other words, how much more ac
 As the forecast error increases with each day further into the future that is predicted, the difference in error between the models becomes smaller.
 Here you can see see that for 1 day into the future, the BOM is over +/-3º more accurate than a persistence model, but by the 6th day, it's less than 1º more accurate.
 """)
+
+# Display barchart
 st.bar_chart(persistence_vs.T)
 
 st.write(""" 

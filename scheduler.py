@@ -24,4 +24,5 @@ def main():
     print('LOG: Complete - Predict Prophet Forecasts', '\n')
     print('LOG: Scheduler Complete')
 
+
 main()
