@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import mean_squared_error  # Mean Squared Error Function (Needs np.sqrt for units)
 
 
-@st.cache(allow_output_mutation=True)
+# @st.cache(allow_output_mutation=True)
 def get_forecast_dataframe():
 
     tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
