@@ -1,10 +1,10 @@
 mkdir -p ~/.streamlit/
-echo "\
-[server]\n\ 
-headless = true\n\
-port = $PORT\n\
-[client]\n\
-caching = false\n\
-[logger]\n\
-level = "debug"\n\
+echo "
+[client]
+caching = false
+[logger]
+level = "debug"
+[server]
+headless = true
+port = $PORT
 " > ~/.streamlit/config.toml
