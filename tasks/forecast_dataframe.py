@@ -113,6 +113,21 @@ def build_forecast_dataframe():
 
     tf.index = dates_index  # change the index back into string format
     fac.index = dates_index  # same index
+    
+    #################################
+    # Persistence
+    ################################
+
+    # Persistence Mechanism subtract each max temp from the one before.
+    pmodel = pd.Series([today - yesterday for today, yesterday in zip(tf['today+0'], tf['today+0'][1:])], index=tf.index[:len(tf.index)-1])
+
+    # Assign pmodel vals to series.
+    persistence = pd.DataFrame()
+    persistence['Persistence Accuracy'] = pmodel.values
+    for i in range(1, 7):
+        persistence[str(i)+' Day Forecast'] = pd.Series(fac['today+'+str(i)].values)
+    persistence.index = dates_index[:len(tf)-1]
+
 
     #################################
     # Save to file
@@ -120,5 +135,6 @@ def build_forecast_dataframe():
 
     tf.to_csv('./static/data/forecast_dataframe.csv')
     fac.to_csv('./static/data/accuracy_dataframe.csv')
+    persistence.to_csv('./static/data/persistence_dataframe.csv')
 
     print('Forecast & Accuracy CSV Saved without errors.', '\n')

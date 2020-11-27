@@ -8,56 +8,28 @@ import numpy as np  # Maths functions
 import datetime as dt  # Time Functions
 from datetime import datetime
 
-# Charting
-import seaborn as sns
-from matplotlib import pyplot as plt
-
 # SKLearn
 from sklearn.metrics import mean_squared_error  # Mean Squared Error Function (Needs np.sqrt for units)
 
-tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
+# @st.cache()  # allow_output_mutation=True # Off until further notice.
+def load_data():
+    tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+    fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+    persistence = pd.read_csv('./static/data/persistence_dataframe.csv', index_col=0)
+    last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
+    return tf, fac, persistence, last_row
 
+def get_daily():
+    # Define Times (easier to just make a string format time here.)
+    today = dt.date.today()
+    todaystr = today.strftime("%Y-%m-%d")
+        
+    return today, todaystr
 
-@st.cache()  # allow_output_mutation=True
-def get_forecast_dataframe():
-    return tf, fac, last_row
-
-
-# Define Times (easier to just make a string format time here.)
-today = dt.date.today()
-todaystr = today.strftime("%Y-%m-%d")
-yesterday = dt.date.today() - pd.DateOffset(days=1)
-yesterdaystr = yesterday.strftime("%Y-%m-%d")
-tomorrow = dt.date.today() + pd.DateOffset(days=1)
-tomorrowstr = tomorrow.strftime("%Y-%m-%d")
-day_after_tomorrow = dt.date.today() + pd.DateOffset(days=2)
-day_after_tomorrowstr = day_after_tomorrow.strftime("%Y-%m-%d")
 
 # Load Data
-tf, fac, last_row = get_forecast_dataframe()  # pull DB data.
-original_index = tf.index
-dates_index = pd.to_datetime(tf.index)
-
-
-#################################
-# Heatmap
-################################
-
-
-# Heatmap Function
-def heat_map(data, title):
-
-    fig, ax = plt.subplots(figsize=(10, 10))
-    ax = sns.heatmap(data, annot=True, center=True, cmap='coolwarm', cbar_kws={'label': 'Degrees Celsius'})
-    ax.set_title(title, loc='center', fontsize=18)
-    ax.set_xticklabels(ax.xaxis.get_ticklabels(), fontsize=14, rotation=30)
-    ax.set_yticklabels(ax.yaxis.get_ticklabels(), fontsize=14, rotation=0)
-    ax.figure.axes[-1].yaxis.label.set_size(14)
-    ax.figure.axes[0].yaxis.label.set_size(14)
-    ax.figure.axes[0].xaxis.label.set_size(14)
-    return st.pyplot(fig);
+today, todaystr = get_daily()
+tf, fac, persistence, last_row = load_data()  # pull DB data.
 
 
 #################################
@@ -84,25 +56,11 @@ accuracy['6 Day Forecast'] = rmse_today6
 accuracy.index = ["Average Daily Forecast Error"]
 
 #################################
-# Persistence
-################################
-
-# Persistence Mechanism subtract each max temp from the one before.
-pmodel = pd.Series([today - yesterday for today, yesterday in zip(tf['today+0'], tf['today+0'][1:])], index=tf.index[:len(tf.index)-1])
-
-# Assign pmodel vals to series.
-persistence = pd.DataFrame()
-persistence['Persistence Accuracy'] = pmodel.values
-for i in range(1, 7):
-    persistence[str(i)+' Day Forecast'] = pd.Series(fac['today+'+str(i)].values)
-persistence.index = original_index[:len(tf)-1]
-
-# Assign RMSE value for pmodel
-persistence_rmse = np.sqrt(mean_squared_error(pmodel, fac['today+0'][:len(fac)-1]))
-
-#################################
 # VS RMSE
 ################################
+
+# Assign RMSE value for pmodel
+persistence_rmse = np.sqrt(mean_squared_error(persistence['Persistence Accuracy'], fac['today+0'][:len(fac)-1]))
 
 persistence_vs = pd.DataFrame()
 persistence_vs['1 Day Error'] = accuracy['1 Day Forecast'] - persistence_rmse
@@ -155,7 +113,7 @@ As this project only uses forecast data, (no past recorded temperatures), Today 
 # """)
 
 # Previous Data Heatmap
-heat_map(tf, "7 Day Forecasts From BOM (Descending to the left)")
+st.image('./static/charts/heatmap_forecast.png')
 
 # Variation Heatmap Description
 st.write("""
@@ -164,7 +122,7 @@ This chart shows how accurate the forecasts were against the actual temperature.
 """)
 
 # Variation Heatmap
-heat_map(fac, "Forecast Variation (0 = 100% Accurate)")
+st.image('./static/charts/heatmap_accuracy.png')
 
 # RMSE Values
 st.write("""
@@ -201,7 +159,7 @@ st.write("""
 Each bar is the difference in temperature from the day before.
 """)
 # Persistence DataFrame
-st.bar_chart(pmodel)
+st.bar_chart(persistence['Persistence Accuracy'])
 
 # Variation Heatmap Description
 st.write("""
@@ -211,7 +169,7 @@ As the days get further away, the accuracy of the persistence and BOM forecast b
 """)
 
 # Display a Heatmap of the Persistence Accuracy
-heat_map(persistence, "Persistence (far left) vs Forecast")
+st.image('./static/charts/heatmap_persistence.png')
 
 # Persistence vs
 st.write("""

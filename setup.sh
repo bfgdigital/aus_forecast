@@ -1,4 +1,7 @@
 mkdir -p ~/.streamlit/
+echo "[global]
+logLevel = debug
+"
 echo "[server]
 headless = true
 port = $PORT
