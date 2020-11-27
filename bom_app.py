@@ -113,7 +113,7 @@ As this project only uses forecast data, (no past recorded temperatures), Today 
 # """)
 
 # Previous Data Heatmap
-st.image('./static/charts/heatmap_forecast.png')
+st.image('./static/charts/heatmap_forecast.png', use_column_width=True)
 
 # Variation Heatmap Description
 st.write("""
@@ -122,7 +122,7 @@ This chart shows how accurate the forecasts were against the actual temperature.
 """)
 
 # Variation Heatmap
-st.image('./static/charts/heatmap_accuracy.png')
+st.image('./static/charts/heatmap_accuracy.png', use_column_width=True)
 
 # RMSE Values
 st.write("""
@@ -169,7 +169,7 @@ As the days get further away, the accuracy of the persistence and BOM forecast b
 """)
 
 # Display a Heatmap of the Persistence Accuracy
-st.image('./static/charts/heatmap_persistence.png')
+st.image('./static/charts/heatmap_persistence.png', use_column_width=True)
 
 # Persistence vs
 st.write("""
