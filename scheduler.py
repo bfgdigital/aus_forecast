@@ -7,7 +7,7 @@ from tasks.retrieve_forecasts_from_BOM import retrieve_forecasts
 from tasks.forecast_dataframe import build_forecast_dataframe
 from training_data.training_weather import build_training_dataframe
 from tasks.generate_heatmaps import generate_heatmaps
-from tasks.build import build_prophet_forecaster
+from tasks.prophet_forecaster import build_prophet_forecaster
 
 
 def main():
