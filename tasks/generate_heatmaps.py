@@ -9,9 +9,9 @@ from matplotlib import pyplot as plt
 ################################
 
 def load_data():
-    tf = pd.read_csv('../static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-    fac = pd.read_csv('../static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-    persistence = pd.read_csv('../static/data/persistence_dataframe.csv', index_col=0)
+    tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+    fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+    persistence = pd.read_csv('./static/data/persistence_dataframe.csv', index_col=0)
     return tf, fac, persistence, 
 
 # Heatmap Function
@@ -31,14 +31,14 @@ def generate_heatmaps():
     tf, fac, persistence = load_data()
     plt.figure() # Push new figure on stack
     heat_map(tf, "7 Day Forecasts From BOM (Descending to the left)")
-    plt.savefig('../static/charts/heatmap_forecast.png');
+    plt.savefig('./static/charts/heatmap_forecast.png');
     
     plt.figure() # Push new figure on stack
     heat_map(fac, "Forecast Variation (0 = 100% Accurate)")
-    plt.savefig('../static/charts/heatmap_accuracy.png');
+    plt.savefig('./static/charts/heatmap_accuracy.png');
     
     plt.figure() # Push new figure on stack
     heat_map(persistence, "Persistence (far left) vs Forecast")
-    plt.savefig('../static/charts/heatmap_persistence.png');
+    plt.savefig('./static/charts/heatmap_persistence.png');
     
     print('LOG: Heatmaps generated and stored without errors.', '\n')
