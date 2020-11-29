@@ -8,11 +8,7 @@ from matplotlib import pyplot as plt
 # Heatmap
 ################################
 
-<<<<<<< HEAD
-def load_data(): 
-=======
 def load_data():
->>>>>>> 80b41bbe85528eab55a4d6de4bdcff70c3956145
     tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
     fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
     persistence = pd.read_csv('./static/data/persistence_dataframe.csv', index_col=0)
