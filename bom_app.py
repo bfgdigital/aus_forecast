@@ -11,25 +11,14 @@ from datetime import datetime
 # SKLearn
 from sklearn.metrics import mean_squared_error  # Mean Squared Error Function (Needs np.sqrt for units)
 
-# @st.cache()  # allow_output_mutation=True # Off until further notice.
-def load_data():
-    tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-    fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
-    persistence = pd.read_csv('./static/data/persistence_dataframe.csv', index_col=0)
-    last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
-    return tf, fac, persistence, last_row
+# load data
+tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+fac = pd.read_csv('./static/data/accuracy_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
+persistence = pd.read_csv('./static/data/persistence_dataframe.csv', index_col=0)
+last_row = pd.read_csv('./static/data/last_row.csv', index_col=0)
 
-def get_daily():
-    # Define Times (easier to just make a string format time here.)
-    today = dt.date.today()
-    todaystr = today.strftime("%Y-%m-%d")
-        
-    return today, todaystr
-
-
-# Load Data
-today, todaystr = get_daily()
-tf, fac, persistence, last_row = load_data()  # pull DB data.
+today = dt.date.today()
+todaystr = today.strftime("%Y-%m-%d")
 
 
 #################################
