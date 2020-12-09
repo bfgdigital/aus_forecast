@@ -19,17 +19,17 @@ def main():
     build_forecast_dataframe()  # Build and save a dataframe of the forecasts
     print('LOG: Complete - Build Forecast Dataframe')
     
-    print('LOG: Starting - Build Training Dataframe')
-    build_training_dataframe()  # Build and save the training data.
-    print('LOG: Complete - Build Training Dataframe')
-    
     print('LOG: Starting - Predict Prophet Forecasts')
     generate_heatmaps()  # Train, fit and save prophet forecasts.
     print('LOG: Complete - Predict Prophet Forecasts', '\n')
 
-    print('LOG: Starting - Predict Prophet Forecasts')
-    build_prophet_forecaster()  # Train, fit and save prophet forecasts.
-    print('LOG: Complete - Predict Prophet Forecasts', '\n')
+    # print('LOG: Starting - Build Training Dataframe')
+    # build_training_dataframe()  # Build and save the training data.
+    # print('LOG: Complete - Build Training Dataframe')
+
+    # print('LOG: Starting - Predict Prophet Forecasts')
+    # build_prophet_forecaster()  # Train, fit and save prophet forecasts.
+    # print('LOG: Complete - Predict Prophet Forecasts', '\n')
     
     print('LOG: Scheduler Complete')
 
