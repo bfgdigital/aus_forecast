@@ -27,6 +27,7 @@ def get_database_connection():
     cur.copy_expert(copy_sql, store)
     store.seek(0)
     mem_stored_db = pd.read_csv(store)
+    mem_stored_db = mem_stored_db.sort_values(['issue', 'forecast'], ascending=[True, True]) # sort the dataframe
 
     #     db = pd.read_sql_query('SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather";',engine)
     #     db = pd.read_sql('bom-weather', engine)  # Don't need whole db
@@ -79,40 +80,28 @@ def build_forecast_dataframe():
     tf.index = pd.to_datetime(tf.index)  # Change the new index back into datetime.
 
     # Accuracy Mechanism: Compare forecast to actual Temp.
-    fac = pd.DataFrame()
-    counter = list(range(len(tf)))
-    columns = list(tf.columns)
-
-    for i in counter:
-        # 7 day forecast inc today, so len can't exceed 7
-        if i < 7:
-            window = i
-            j = i
+    def justify(a, invalid_val=0, axis=1, side='left'):
+        if invalid_val is np.nan:
+            mask = ~np.isnan(a)  # Reversing logical value ~x is equivalent to (-x) - 1
         else:
-            window = 6
-            j = 6
+            mask = a!=invalid_val
+        justified_mask = np.sort(mask,axis=axis)
+        if (side=='up') | (side=='left'):
+            justified_mask = np.flip(justified_mask,axis=axis)
+        out = np.full(a.shape, invalid_val) 
+        if axis==1:
+            out[justified_mask] = a[mask]
+        else:
+            out.T[justified_mask.T] = a.T[mask.T]
+        return out
 
-        # Start date at most recent row
-        actual_date = tf.index[-1]  # start with the last day
-        window_date = actual_date - pd.DateOffset(
-            days=window)  # Number of days in the past can't be more than those forecast
-        row_0 = tf.index[0]  # We want to end when window date is equal to row_0.
-
-        tf_list = []  # temporary holder of weeks values.
-        while window_date >= row_0:
-            true_temp = int(tf.loc[actual_date][0])  # True temperature recorded on day
-            predicted_temp = int(tf.loc[window_date][window])  # data predicted on value of window
-            difference = true_temp - predicted_temp
-            # loop
-            actual_date -= pd.DateOffset(days=1)  # take off 1 day.
-            window_date -= pd.DateOffset(days=1)  # take off 1 day.
-            # append
-            tf_list.append(difference)
-            # Add list to df as series
-        fac[columns[j]] = pd.Series(tf_list[::-1])  # Add list backwards.
-
-    tf.index = dates_index  # change the index back into string format
-    fac.index = dates_index  # same index
+    holder = []
+    for i in range(6):
+        tf0 = tf['today+0']
+        holder.append(tf0 - tf['today+'+(str(i))].shift(i))  # Using the shift function
+    forecast_accuracy = pd.DataFrame(holder).T
+    # Use justify to shift the values to the bottom of the col (np vectorized.)
+    forecast_accuracy[:] = justify(forecast_accuracy.values, invalid_val=np.nan, axis=0, side='up')
     
     #################################
     # Persistence
@@ -125,7 +114,7 @@ def build_forecast_dataframe():
     persistence = pd.DataFrame()
     persistence['Persistence Accuracy'] = pmodel.values
     for i in range(1, 7):
-        persistence[str(i)+' Day Forecast'] = pd.Series(fac['today+'+str(i)].values)
+        persistence[str(i)+' Day Forecast'] = pd.Series(forecast_accuracy['today+'+str(i)].values)
     persistence.index = dates_index[:len(tf)-1]
 
 
@@ -134,7 +123,7 @@ def build_forecast_dataframe():
     ################################
 
     tf.to_csv('./static/data/forecast_dataframe.csv')
-    fac.to_csv('./static/data/accuracy_dataframe.csv')
+    forecast_accuracy.to_csv('./static/data/accuracy_dataframe.csv')
     persistence.to_csv('./static/data/persistence_dataframe.csv')
 
     print('Forecast & Accuracy CSV Saved without errors.', '\n')

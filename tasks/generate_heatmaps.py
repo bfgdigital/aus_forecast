@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 #################################
 # Heatmap
-################################
+#################################
 
 def load_data():
     tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
