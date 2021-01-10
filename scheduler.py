@@ -3,7 +3,7 @@
 import os
 import sys
 
-from tasks.retrieve_forecasts_from_BOM import retrieve_forecasts
+from tasks.retrieve_forecasts_from_BOM import retrieve_forecasts, error_check
 from tasks.forecast_dataframe import build_forecast_dataframe
 from training_data.training_weather import build_training_dataframe
 from tasks.generate_heatmaps import generate_heatmaps
@@ -15,6 +15,10 @@ def main():
     retrieve_forecasts()  # Update the database.
     print('LOG: Complete - Retrieve Forecasts from API')
     
+    print('LOG: Starting - Check database for errors')
+    error_check()  # Check database for errors.
+    print('LOG: Complete - Check database for errors')
+
     print('LOG: Starting - Build Forecast Dataframe')
     build_forecast_dataframe()  # Build and save a dataframe of the forecasts
     print('LOG: Complete - Build Forecast Dataframe')
