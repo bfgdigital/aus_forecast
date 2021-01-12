@@ -1,4 +1,4 @@
-dill==0.3.3
+dill
 fbprophet==0.7.1
 matplotlib==3.3.3
 numpy==1.19.4
