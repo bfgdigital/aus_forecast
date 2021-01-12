@@ -2,7 +2,7 @@
 
 ## Introduction
 
-####Evaluating the accuracy of the Bureau of Meteorology 6 day forecast.
+#### Evaluating the accuracy of the Bureau of Meteorology 6 day forecast.
 The following information is an examination of the Bureau of Meteorology's 6-day forecast.
 
 It's hard to know if a forecast is good because it depends on how 'good' is measured. Is accurate to within 1º good? How about within 5º?
