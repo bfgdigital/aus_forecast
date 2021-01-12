@@ -2,7 +2,7 @@
 
 import pandas as pd  # Structure and Dataframes
 import datetime as dt  # Time Functions
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests  # API fetching
 
 # SQL & Credentials Mgnt
@@ -12,20 +12,19 @@ import dotenv  # Protect db creds
 
 dotenv.load_dotenv()
 
-
-def retrieve_forecasts():
-    # Define Reference Times
-    today = dt.date.today()
-
-    # SQL Connection
+def fetch_db():
+    print('LOG: Fetching database')
     DATABASE_URL = os.environ.get('DATABASE_URL')
     engine = sqlalchemy.create_engine(DATABASE_URL)
-    print(f'LOG: Connecting to database at {today}')
-    db = pd.read_sql('bom-weather', engine)
+    db = pd.read_sql('bom-weather', engine)  # Require whole db.
+    return db, engine
 
-    # Build index checklist
-    dates_index = list(set(db['issue']))  # create string based index
-    dates_index.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))  # Sort string indexes as dates
+def retrieve_forecasts():
+    
+    db, engine = fetch_db()
+    # Define Reference Times
+    today = dt.date.today()
+    print(f'LOG: Connecting to database at {today}')
 
     # Forecast Locations
     # More URL's can be found via https://weather.bom.gov.au/search & talking the location reference from the URL
@@ -61,12 +60,11 @@ def retrieve_forecasts():
             af['sunset'] = [row['sunset_time'] for row in af['astronomical']]
             # Clean Up
             af.drop(['rain', 'uv', 'astronomical', 'now'], axis=1, inplace=True)
-            af = af.reindex(sorted(af.columns), axis=1)
+            af = af.reindex(sorted(af.columns), axis=1)  # Sort Cols
             # Add new data to forecast and push back into DB
             db = db.append(af)
             db.drop_duplicates(subset=db.columns.difference(['date']), keep='last', inplace=True,
                                ignore_index=True)  # In the case of pulling x2 in one day.
             db.to_sql('bom-weather', engine, if_exists='replace', index=False)
-            print(f'LOG: Added new rows to db without problems.')
-
+            print(f'LOG: Added new rows for {location} to db without problems.', '\n')
     print('LOG: Forecasts retrieved and stored without errors.', '\n')
