@@ -15,9 +15,7 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 # stores the db in memory, slightly more efficient.
 def get_database_connection():
     
-    #Offline:
-#     mem_stored_db = pd.read_csv('db.csv')
-#     Online
+    print('LOG: Fetching database...')
     
     engine = sqlalchemy.create_engine(DATABASE_URL)
     query = 'SELECT issue, MAX(CASE WHEN forecast = 0 THEN temp_max END) AS "today+0", MAX(CASE WHEN forecast = 1 THEN temp_max END) AS "today+1", MAX(CASE WHEN forecast = 2 THEN temp_max END) AS "today+2", MAX(CASE WHEN forecast = 3 THEN temp_max END) AS "today+3", MAX(CASE WHEN forecast = 4 THEN temp_max END) AS "today+4", MAX(CASE WHEN forecast = 5 THEN temp_max END) AS "today+5", MAX(CASE WHEN forecast = 6 THEN temp_max END) AS "today+6" FROM "bom-weather" GROUP BY issue ORDER BY issue'
@@ -33,13 +31,15 @@ def get_database_connection():
     store.seek(0)
     mem_stored_db = pd.read_csv(store)
     
+    #  Fetch the extended text description of the last row.
+    query2 = 'SELECT extended_text FROM "bom-weather" ORDER BY issue DESC LIMIT 1'
+    last_row = pd.read_sql_query(query2, engine)
+    
     # Incase whole db is req.
     #     mem_stored_db = pd.read_sql('bom-weather', engine)  
     #     mem_stored_db = mem_stored_db.sort_values(['issue', 'forecast', 'date'], ascending=[True, True, True]) # sort the dataframe
     
-    return mem_stored_db
-
-
+    return mem_stored_db, last_row
 
 
 def build_forecast_dataframe():
@@ -61,8 +61,9 @@ def build_forecast_dataframe():
         return out
     
     # Create accuracy table by compare forecast T>0 to T0
-    db = get_database_connection()
-    dates_index = db['issue'] # set the index to the dataframe.
+    db, last_row = get_database_connection()
+    
+    dates_index = list(set(db['issue'])) # set the index to the dataframe.
     db.index = pd.to_datetime(db.index)  # Change the new index back into datetime.
     db.drop('issue',axis=1,inplace=True)
 
@@ -138,5 +139,6 @@ def build_forecast_dataframe():
     db.to_csv('./static/data/forecast_dataframe.csv')
     forecast_accuracy.to_csv('./static/data/accuracy_dataframe.csv')
     persistence.to_csv('./static/data/persistence_dataframe.csv')
+    last_row.to_csv('./static/data/last_row.csv')
 
     print('Forecast & Accuracy CSV Saved without errors.', '\n')

@@ -9,7 +9,7 @@ import datetime as dt  # Time Functions
 from datetime import datetime
 
 # SKLearn
-from sklearn.metrics import mean_squared_error  # Mean Squared Error Function (Needs np.sqrt for units)
+from sklearn.metrics import mean_squared_error, mean_absolute_error  # Mean Squared Error Function (Needs np.sqrt for units)
 
 # load data
 tf = pd.read_csv('./static/data/forecast_dataframe.csv', index_col=0)  # Whole csv. Much faster than accessing db.
@@ -42,7 +42,30 @@ accuracy['4 Day Forecast'] = rmse_today4
 accuracy['5 Day Forecast'] = rmse_today5
 accuracy['6 Day Forecast'] = rmse_today6
 
-accuracy.index = ["Average Daily Forecast Error"]
+accuracy.index = ["Average Daily Forecast Error (RMSE)"]
+
+#################################
+# MAE
+################################
+
+# Assign Mean Squared Error
+mae_today1 = [mean_absolute_error(fac['today+0'][:len(fac['today+1'].dropna())], fac['today+1'].dropna())]
+mae_today2 = [mean_absolute_error(fac['today+0'][:len(fac['today+2'].dropna())], fac['today+2'].dropna())]
+mae_today3 = [mean_absolute_error(fac['today+0'][:len(fac['today+3'].dropna())], fac['today+3'].dropna())]
+mae_today4 = [mean_absolute_error(fac['today+0'][:len(fac['today+4'].dropna())], fac['today+4'].dropna())]
+mae_today5 = [mean_absolute_error(fac['today+0'][:len(fac['today+5'].dropna())], fac['today+5'].dropna())]
+mae_today6 = [mean_absolute_error(fac['today+0'][:len(fac['today+6'].dropna())], fac['today+6'].dropna())]
+
+# Assign error vals to a df
+mae_accuracy = pd.DataFrame()
+mae_accuracy['1 Day Forecast'] = mae_today1
+mae_accuracy['2 Day Forecast'] = mae_today2
+mae_accuracy['3 Day Forecast'] = mae_today3
+mae_accuracy['4 Day Forecast'] = mae_today4
+mae_accuracy['5 Day Forecast'] = mae_today5
+mae_accuracy['6 Day Forecast'] = mae_today6
+
+mae_accuracy.index = ["Average Daily Forecast Error (MAE)"]
 
 #################################
 # VS RMSE
@@ -59,7 +82,25 @@ persistence_vs['4 Day Error'] = accuracy['4 Day Forecast'] - persistence_rmse
 persistence_vs['5 Day Error'] = accuracy['5 Day Forecast'] - persistence_rmse
 persistence_vs['6 Day Error'] = accuracy['6 Day Forecast'] - persistence_rmse
 
-persistence_vs.index = ["BOM Error vs Persistence Error"]
+persistence_vs.index = ["BOM Error vs Persistence Error (RMSE)"]
+
+
+#################################
+# VS MAE
+################################
+
+# Assign RMSE value for pmodel
+persistence_mae = mean_absolute_error(persistence['Persistence Accuracy'], fac['today+0'][:len(fac)-1])
+
+mae_persistence_vs = pd.DataFrame()
+mae_persistence_vs['1 Day Error'] = accuracy['1 Day Forecast'] - persistence_mae
+mae_persistence_vs['2 Day Error'] = accuracy['2 Day Forecast'] - persistence_mae
+mae_persistence_vs['3 Day Error'] = accuracy['3 Day Forecast'] - persistence_mae
+mae_persistence_vs['4 Day Error'] = accuracy['4 Day Forecast'] - persistence_mae
+mae_persistence_vs['5 Day Error'] = accuracy['5 Day Forecast'] - persistence_mae
+mae_persistence_vs['6 Day Error'] = accuracy['6 Day Forecast'] - persistence_mae
+
+mae_persistence_vs.index = ["BOM Error vs Persistence Error (MAE)"]
 
 #################################
 #################################
@@ -115,19 +156,30 @@ st.image('./static/charts/heatmap_accuracy.png', use_column_width=True)
 
 # RMSE Values
 st.write("""
-#### 1.3: RMSE Accuracy of predictions
+#### 1.3a: RMSE Accuracy of predictions
 This table shows how many degrees the forecasts is likely to fall between.
 so for a value of 2, the forecasts is likely to be within 2ºC higher or lower of that which they forecast.
 # """)
 st.dataframe(accuracy)
 
-
 # Chart accuracy
 st.write("""
-#### 1.4: Line Chart of Forecast Accuracy
+#### 1.3b: Line Chart of Forecast Accuracy (RMSE)
 As the forecast moves further into the future, the average forecast error increases.
 """)
 st.line_chart(accuracy.T)
+
+# MAE Values
+st.write("""
+#### 1.4a: MAE Accuracy of predictions
+As above, but for Mean Absolute Error (less sensitive to outliers).
+# """)
+st.dataframe(mae_accuracy)
+st.write("""
+#### 1.4b: Line Chart of Forecast Accuracy (MAE)
+As the forecast moves further into the future, the average forecast error increases.
+""")
+st.line_chart(mae_accuracy.T)
 
 # PART 2
 st.write("""
@@ -160,24 +212,31 @@ As the days get further away, the accuracy of the persistence and BOM forecast b
 # Display a Heatmap of the Persistence Accuracy
 st.image('./static/charts/heatmap_persistence.png', use_column_width=True)
 
-# Persistence vs
+# Persistence vs RMSE
 st.write("""
-#### 2.4: RMSE Accuracy of Persistence predictions
-The error for persistence should be constantly changing depending on the swing in the weather,
-however 
+#### 2.4a: RMSE Accuracy of Persistence predictions
+The error for the persistence should be higher if weather is more variable, but much lower for drier more consistent climates. 
 # """)
 st.dataframe(persistence_vs)
+
+# Persistence vs MAE
+st.write("""
+#### 2.4b: MAE Accuracy of Persistence predictions
+As above but for Mean Absolute Error (less sensitive to outliers).
+# """)
+st.dataframe(mae_persistence_vs)
 
 # Chart accuracy
 st.write("""
 #### 2.5: BOM VS Persistence
 This chart shows (BOM RMSE - Persistence RMSE), in other words, how much more accurate is the BOM than Persistence.
 As the forecast error increases with each day further into the future that is predicted, the difference in error between the models becomes smaller.
-Here you can see see that for 1 day into the future, the BOM is over +/-3º more accurate than a persistence model, but by the 6th day, it's less than 1º more accurate.
+Here you can see see that for 1 day into the future, the BOM is over +/-3º more accurate than a persistence model, but by the 6th day, it's becomming less accurate.
 """)
 
 # Display barchart
 st.bar_chart(persistence_vs.T)
+st.bar_chart(mae_persistence_vs.T)
 
 st.write(""" 
 It appears that the persistence model may be a good benchmark for forecasts greater than 6 days away.
