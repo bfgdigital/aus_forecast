@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import datetime as dt  # Time Functions
 from datetime import datetime
 import sqlalchemy  # SQL and Credentials
@@ -11,11 +12,15 @@ dotenv.load_dotenv()
 # SQL Connection
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-
 # stores the db in memory, slightly more efficient.
 def get_database_connection():
+    
+    #Offline:
+#     mem_stored_db = pd.read_csv('db.csv')
+#     Online
+    
     engine = sqlalchemy.create_engine(DATABASE_URL)
-    query = 'SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather"'
+    query = 'SELECT issue, MAX(CASE WHEN forecast = 0 THEN temp_max END) AS "today+0", MAX(CASE WHEN forecast = 1 THEN temp_max END) AS "today+1", MAX(CASE WHEN forecast = 2 THEN temp_max END) AS "today+2", MAX(CASE WHEN forecast = 3 THEN temp_max END) AS "today+3", MAX(CASE WHEN forecast = 4 THEN temp_max END) AS "today+4", MAX(CASE WHEN forecast = 5 THEN temp_max END) AS "today+5", MAX(CASE WHEN forecast = 6 THEN temp_max END) AS "today+6" FROM "bom-weather" GROUP BY issue ORDER BY issue'
 
     # Store db in memory for speed up?
     copy_sql = "COPY ({query}) TO STDOUT WITH CSV {head}".format(
@@ -27,59 +32,19 @@ def get_database_connection():
     cur.copy_expert(copy_sql, store)
     store.seek(0)
     mem_stored_db = pd.read_csv(store)
-    mem_stored_db = mem_stored_db.sort_values(['issue', 'forecast'], ascending=[True, True]) # sort the dataframe
-
-    #     db = pd.read_sql_query('SELECT date, forecast, temp_max, issue, extended_text FROM "bom-weather";',engine)
-    #     db = pd.read_sql('bom-weather', engine)  # Don't need whole db
+    
+    # Incase whole db is req.
+    #     mem_stored_db = pd.read_sql('bom-weather', engine)  
+    #     mem_stored_db = mem_stored_db.sort_values(['issue', 'forecast', 'date'], ascending=[True, True, True]) # sort the dataframe
+    
     return mem_stored_db
 
 
+
+
 def build_forecast_dataframe():
-
-    print('Beginning to build the forecast database')
-
-    # Load Data
-    db = get_database_connection()  # pull DB data.
-    db.index = pd.to_datetime(db['date'])  # Set DB Index
-    dates_index = list(set(db['issue']))  # create string based index
-    dates_index.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))  # Sort string indexes as dates
-
-    #################################
-    # Latest Info
-    ################################
-
-    last_row = db.tail(1)
-    last_row.to_csv('./static/data/last_row.csv')
-
-    #################################
-    # DataFrame
-    ################################
-
-    # Build DataFrame from db
-    today0 = db[db['forecast'] == 0]
-    today1 = db[db['forecast'] == 1]
-    today2 = db[db['forecast'] == 2]
-    today3 = db[db['forecast'] == 3]
-    today4 = db[db['forecast'] == 4]
-    today5 = db[db['forecast'] == 5]
-    today6 = db[db['forecast'] == 6]
-
-    # Dataframe for Today + Forecast
-    tf = pd.DataFrame(None)
-    tf['today+0'] = today0['temp_max'].reset_index(drop=True)
-    tf['today+1'] = today1['temp_max'].reset_index(drop=True)
-    tf['today+2'] = today2['temp_max'].reset_index(drop=True)
-    tf['today+3'] = today3['temp_max'].reset_index(drop=True)
-    tf['today+4'] = today4['temp_max'].reset_index(drop=True)
-    tf['today+5'] = today5['temp_max'].reset_index(drop=True)
-    tf['today+6'] = today6['temp_max'].reset_index(drop=True)
-
-    tf.index = dates_index # set the index to the dataframe.
-
-    # Create Accuracy Table
-    tf.index = pd.to_datetime(tf.index)  # Change the new index back into datetime.
-
-    # Accuracy Mechanism: Compare forecast to actual Temp.
+    
+    # Justify function to shift NaN's to correct side of db.
     def justify(a, invalid_val=0, axis=1, side='left'):
         if invalid_val is np.nan:
             mask = ~np.isnan(a)  # Reversing logical value ~x is equivalent to (-x) - 1
@@ -94,35 +59,83 @@ def build_forecast_dataframe():
         else:
             out.T[justified_mask.T] = a.T[mask.T]
         return out
+    
+    # Create accuracy table by compare forecast T>0 to T0
+    db = get_database_connection()
+    dates_index = db['issue'] # set the index to the dataframe.
+    db.index = pd.to_datetime(db.index)  # Change the new index back into datetime.
+    db.drop('issue',axis=1,inplace=True)
 
     holder = []
-    for i in range(6):
-        tf0 = tf['today+0']
-        holder.append(tf0 - tf['today+'+(str(i))].shift(i))  # Using the shift function
+    for i in range(7):
+        tf0 = db['today+0']
+        holder.append(tf0 - db['today+'+(str(i))].shift(i))  # Using the shift function
     forecast_accuracy = pd.DataFrame(holder).T
-    # Use justify to shift the values to the bottom of the col (np vectorized.)
     forecast_accuracy[:] = justify(forecast_accuracy.values, invalid_val=np.nan, axis=0, side='up')
+    forecast_accuracy.columns = db.columns  # replace col names.
+
+    # Replace original index with non-datetime indexes.
+    forecast_accuracy.index = dates_index  # same index
+    db.index = dates_index  # same index
+
+
+    #!!! This commented section was the original method of building the comparison chart.
+    # (It was very slow due to multiple loops. Keeping it here for future reference.)
+    
+    # forecast_accuracy = pd.DataFrame()
+    # counter = list(range(len(db)))
+    # columns = list(db.columns)
+
+    # for i in counter:
+    #     db_list = []  # temporary container of weeks values.
+    #     if i < 7:  # 7 day forecast inc today, so len can't exceed 7
+    #         window = i
+    #         j = i
+    #     else:
+    #         window = 6
+    #         j = 6
+
+    #     # Start date at most recent row
+    #     actual_date = db.index[-1]  # start with the last day
+    #     window_date = actual_date - pd.DateOffset(
+    #         days=window)  # Number of days in the past can't be more than those forecast
+    #     row_0 = db.index[0]  # We want to end when window date is equal to row_0.
+
+    #     while window_date >= row_0:
+    #         true_temp = int(db.loc[actual_date][0])  # True temperature recorded on day
+    #         predicted_temp = int(db.loc[window_date][window])  # data predicted on value of window
+    #         difference = true_temp - predicted_temp
+    #         # loop
+    #         actual_date -= pd.DateOffset(days=1)  # take off 1 day.
+    #         window_date -= pd.DateOffset(days=1)  # take off 1 day.
+    #         # append
+    #         db_list.append(difference)
+    #         # Add list to df as series
+    #     forecast_accuracy[columns[j]] = pd.Series(db_list[::-1])  # Add list backwards.
+
+    # db.index = dates_index  # change the index back into string format
+    # forecast_accuracy.index = dates_index  # same index
     
     #################################
     # Persistence
     ################################
 
     # Persistence Mechanism subtract each max temp from the one before.
-    pmodel = pd.Series([today - yesterday for today, yesterday in zip(tf['today+0'], tf['today+0'][1:])], index=tf.index[:len(tf.index)-1])
+    pmodel = pd.Series([today - yesterday for today, yesterday in zip(db['today+0'], db['today+0'][1:])], index=db.index[:len(db.index)-1])
 
     # Assign pmodel vals to series.
     persistence = pd.DataFrame()
     persistence['Persistence Accuracy'] = pmodel.values
     for i in range(1, 7):
         persistence[str(i)+' Day Forecast'] = pd.Series(forecast_accuracy['today+'+str(i)].values)
-    persistence.index = dates_index[:len(tf)-1]
+    persistence.index = dates_index[:len(db)-1]
 
 
     #################################
     # Save to file
     ################################
 
-    tf.to_csv('./static/data/forecast_dataframe.csv')
+    db.to_csv('./static/data/forecast_dataframe.csv')
     forecast_accuracy.to_csv('./static/data/accuracy_dataframe.csv')
     persistence.to_csv('./static/data/persistence_dataframe.csv')
 

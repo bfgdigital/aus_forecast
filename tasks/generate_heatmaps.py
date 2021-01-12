@@ -16,7 +16,7 @@ def load_data():
 
 # Heatmap Function
 def heat_map(data, title):
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(10, 20))
     ax = sns.heatmap(data, annot=True, center=True, cmap='coolwarm', cbar_kws={'label': 'Degrees Celsius'})
     ax.set_title(title, loc='center', fontsize=18)
     ax.set_xticklabels(ax.xaxis.get_ticklabels(), fontsize=14, rotation=-20, ha="left" )
