@@ -1,0 +1,43 @@
+WITH dataframe AS (
+  SELECT
+    -- you need an issue here somehow too
+    0 AS "today+0",
+    1 AS "today+1",
+    GENERATE_SERIES(
+    DATE '2020-10-08',
+    DATE '2021-01-10',
+    '1 DAY'
+    )::DATE AS day
+),
+
+today0 AS (
+   SELECT
+    issue,
+    temp_max AS f0
+  FROM
+    "bom-weather2"
+  WHERE
+    forecast = 0
+),
+
+today1 AS (
+   SELECT
+    issue,
+    temp_max AS f1
+  FROM
+    "bom-weather2"
+  WHERE
+    forecast = 1
+),
+
+joining_data AS (
+  SELECT
+    dataframe.day,
+    dataframe.forecast,
+    today0.f0,
+    today1.f1
+  FROM dataframe
+  LEFT JOIN today0 ON today0.issue = dataframe.day
+  LEFT JOIN today1 ON today1.issue = dataframe.day
+)
+SELECT * FROM joining_data;
