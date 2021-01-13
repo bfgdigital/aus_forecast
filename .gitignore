@@ -3,4 +3,8 @@
 .env
 development/
 .idea
+<<<<<<< HEAD
 sql/
+=======
+sql/
+>>>>>>> d250a5334f3464f35912a3b45c01fc66fe73fa65
