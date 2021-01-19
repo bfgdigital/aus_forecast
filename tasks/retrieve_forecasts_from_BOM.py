@@ -22,6 +22,8 @@ def fetch_db():
 def retrieve_forecasts():
     
     db, engine = fetch_db()
+    # Set of dates to prevent duplication.
+    dates_index = list(set(db['issue'])) 
     # Define Reference Times
     today = dt.date.today()
     print(f'LOG: Connecting to database at {today}')
