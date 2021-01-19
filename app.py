@@ -146,7 +146,7 @@ As this project only uses forecast data, (no past recorded temperatures), Today 
 # Note: Using a dummy query string to force Heroku to refresh the image.
 dummytime = datetime.now().strftime("%S")
 heatmap_image = './static/charts/heatmap_forecast.png?dummy=' + str(dummytime)
-st.image(heatmap_image, use_column_width=True)
+st.image('./static/charts/heatmap_forecast.png', use_column_width=True)
 
 # Variation Heatmap Description
 st.write("""
@@ -156,7 +156,7 @@ This chart shows how accurate the forecasts were against the actual temperature.
 
 # Variation Heatmap
 accuracy_image = './static/charts/heatmap_accuracy.png?dummy=' + str(dummytime)
-st.image(accuracy_image, use_column_width=True)
+st.image('./static/charts/heatmap_accuracy.png', use_column_width=True)
 
 # RMSE Values
 st.write("""
@@ -214,8 +214,8 @@ As the days get further away, the accuracy of the persistence and BOM forecast b
 """)
 
 # Display a Heatmap of the Persistence Accuracy
-persistence_image = './static/charts/heatmap_persistence.png?dummy=' + str(dummytime)
-st.image(persistence_image, use_column_width=True)
+persistence_image = './static/charts/heatmap_persistence.png?dummy=' + str(dummytime)  # Used on servers that don't refresh images.
+st.image('./static/charts/heatmap_persistence.png', use_column_width=True)
 
 # Persistence vs RMSE
 st.write("""
