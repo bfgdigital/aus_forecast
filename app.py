@@ -21,9 +21,9 @@ today = dt.date.today()
 todaystr = today.strftime("%Y-%m-%d")
 
 
-#################################
-# RMSE
-################################
+###############################################################
+# RMSE (Root Mean Sqared Error: Influences higher values more)
+###############################################################
 
 # Assign (Root) Mean Squared Error
 rmse_today1 = [np.sqrt(mean_squared_error(fac['today+0'][:len(fac['today+1'].dropna())], fac['today+1'].dropna()))]
@@ -44,9 +44,9 @@ accuracy['6 Day Forecast'] = rmse_today6
 
 accuracy.index = ["Average Daily Forecast Error (RMSE)"]
 
-#################################
-# MAE
-################################
+###############################################################
+# MAE (Mean Absolute Error: Influences lower values more)
+###############################################################
 
 # Assign Mean Squared Error
 mae_today1 = [mean_absolute_error(fac['today+0'][:len(fac['today+1'].dropna())], fac['today+1'].dropna())]
