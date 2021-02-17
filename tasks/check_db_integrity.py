@@ -47,8 +47,9 @@ def integrity_check(): # Impute any missing data.
         # Take last 6 from day before [1:7] as (0:5)
         # and second last from day after [6:7] as (6)
         try:
-            part1 = (db[db['issue'] == str(day_before)][1:7])  # day 1:6
-            part2 = db[db['issue'] == str(day_after)][5:6]  # day 7
+            
+            part2 = db[db['issue'] == str(day_before)][6:7]  # day 7
+            part1 = db[db['issue'] == str(day_after)][1:7]  # day 1:6
             print(f'len of part1 = {len(part1)}')
             print(f'len of part2 = {len(part2)}')
             new_rows = pd.concat([part1, part2], axis=0)
@@ -59,8 +60,8 @@ def integrity_check(): # Impute any missing data.
             pass
 
         try:
-            part1 = (db[db['issue'] == str(day_before)][1:2])  # day 1
-            part2 = db[db['issue'] == str(day_after)][0:6]  # day 2:7
+            part2 = db[db['issue'] == str(day_before)][0:6]  # day 1:6
+            part1 = db[db['issue'] == str(day_after)][1:2]  # day 7
             print(f'len of part1 = {len(part1)}')
             print(f'len of part2 = {len(part2)}')
             new_rows = pd.concat([part1, part2], axis=0)
@@ -73,7 +74,8 @@ def integrity_check(): # Impute any missing data.
             # Needs a wider excalation loop that can cover
             # multiple days before and behind.
             # OR we can run it multiple times (start to finish)
-            print('\n!!! Missing dates integrity check failed!!!\n')
+            print('\n!!! Missing dates integrity check failed!!!')
+            print(f'{str_date}\n')
             continue
     
     dates_index = build_dates_index(db) # Rebuild a list of issue dates.
