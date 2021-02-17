@@ -13,7 +13,7 @@ from tasks.prophet_forecaster import build_prophet_forecaster
 
 def main():
     print('LOG: Starting - Retrieve Forecasts from API')
-    # retrieve_forecasts()  # Update the database.
+    retrieve_forecasts()  # Update the database.
     print('LOG: Complete - Retrieve Forecasts from API', '\n')
     
     print('LOG: Starting - Check database integrity')
