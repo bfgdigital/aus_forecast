@@ -19,6 +19,13 @@ def fetch_db():
     db = pd.read_sql('bom-weather', engine)  # Require whole db.
     return db, engine
 
+
+def build_dates_index(db):  # Build index checklist
+    dates_index = list(set(db['issue']))  # create string based index
+    dates_index.sort(key=lambda date: datetime.strptime(
+        date, '%Y-%m-%d'))  # Sort string indexes as dates
+    return dates_index
+
 def retrieve_forecasts():
     
     db, engine = fetch_db()
@@ -26,7 +33,7 @@ def retrieve_forecasts():
     today = dt.date.today()
     print(f'LOG: Connecting to database at {today}')
 
-    dates_index = list(set(db['issue']))
+    dates_index = build_dates_index(db)
 
     # Forecast Locations
     # More URL's can be found via https://weather.bom.gov.au/search & talking the location reference from the URL

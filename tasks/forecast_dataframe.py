@@ -42,7 +42,15 @@ def get_database_connection():
     return mem_stored_db, last_row
 
 
+def build_dates_index(db):  # Build index checklist
+    dates_index = list(set(db['issue']))  # create string based index
+    dates_index.sort(key=lambda date: datetime.strptime(
+        date, '%Y-%m-%d'))  # Sort string indexes as dates
+    return dates_index
+
+
 def build_forecast_dataframe():
+    
     
     # Justify function to shift NaN's to correct side of db.
     def justify(a, invalid_val=0, axis=1, side='left'):
@@ -62,8 +70,9 @@ def build_forecast_dataframe():
     
     # Create accuracy table by compare forecast T>0 to T0
     db, last_row = get_database_connection()
+
+    dates_index = build_dates_index(db)  # set the index to the dataframe.
     
-    dates_index = list(set(db['issue'])) # set the index to the dataframe.
     db.index = pd.to_datetime(db.index)  # Change the new index back into datetime.
     db.drop('issue',axis=1,inplace=True)
 
