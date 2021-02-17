@@ -26,6 +26,8 @@ def retrieve_forecasts():
     today = dt.date.today()
     print(f'LOG: Connecting to database at {today}')
 
+    dates_index = list(set(db['issue']))
+
     # Forecast Locations
     # More URL's can be found via https://weather.bom.gov.au/search & talking the location reference from the URL
     # Eg: https://weather.bom.gov.au/location/r1r5rjm-clonbinane << 'r1r5rjm'

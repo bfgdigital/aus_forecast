@@ -34,7 +34,7 @@ def integrity_check(): # Impute any missing data.
     dates_index = build_dates_index(db)  # Get a list of issue dates.
     
     missing_dates = pd.date_range(start = dates_index[0],
-                      end = dates_index[-1]).difference(pd.to_datetime(dates_index))    
+                      end = dates_index[-1]).difference(pd.to_datetime(dates_index))  # [::-1] (Reverse?)   
     
     print('LOG: Checking for missing dates')
     for date in missing_dates:
@@ -43,14 +43,38 @@ def integrity_check(): # Impute any missing data.
         day_before = (date - timedelta(days=1)).date()  # One Day prior
         day_after = (date + timedelta(days=1)).date()  # Day after
 
+        # THIS NEEDS WORK. BIT SLOPPY
         # Take last 6 from day before [1:7] as (0:5)
         # and second last from day after [6:7] as (6)
-        forecasts_0 = (db[db['issue'] == str(day_before)][1:7])  # just 1
-        forecasts_1to7 = db[db['issue'] == str(day_after)][5:6]  # not inc. 7
-        new_rows = pd.concat([forecasts_0,forecasts_1to7], axis=0)
-        new_rows['forecast'] = [0,1,2,3,4,5,6]
-        new_rows['issue'] = str_date
-        db = db.append(new_rows)
+        try:
+            part1 = (db[db['issue'] == str(day_before)][1:7])  # day 1:6
+            part2 = db[db['issue'] == str(day_after)][5:6]  # day 7
+            print(f'len of part1 = {len(part1)}')
+            print(f'len of part2 = {len(part2)}')
+            new_rows = pd.concat([part1, part2], axis=0)
+            new_rows['forecast'] = [0,1,2,3,4,5,6]
+            new_rows['issue'] = str_date
+            db = db.append(new_rows)
+        except:
+            pass
+
+        try:
+            part1 = (db[db['issue'] == str(day_before)][1:2])  # day 1
+            part2 = db[db['issue'] == str(day_after)][0:6]  # day 2:7
+            print(f'len of part1 = {len(part1)}')
+            print(f'len of part2 = {len(part2)}')
+            new_rows = pd.concat([part1, part2], axis=0)
+            new_rows['forecast'] = [0,1,2,3,4,5,6]
+            new_rows['issue'] = str_date
+            db = db.append(new_rows)
+        except:
+            # When there are dates either side of date in missing_dates
+            # this solution cannot work.
+            # Needs a wider excalation loop that can cover
+            # multiple days before and behind.
+            # OR we can run it multiple times (start to finish)
+            print('\n!!! Missing dates integrity check failed!!!\n')
+            continue
     
     dates_index = build_dates_index(db) # Rebuild a list of issue dates.
     
