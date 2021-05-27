@@ -51,7 +51,7 @@ def build_dates_index(db):  # Build index checklist
 
 def build_forecast_dataframe():
     
-    
+
     # Justify function to shift NaN's to correct side of db.
     def justify(a, invalid_val=0, axis=1, side='left'):
         if invalid_val is np.nan:
@@ -87,44 +87,6 @@ def build_forecast_dataframe():
     # Replace original index with non-datetime indexes.
     forecast_accuracy.index = dates_index  # same index
     db.index = dates_index  # same index
-
-
-    #!!! This commented section was the original method of building the comparison chart.
-    # (It was very slow due to multiple loops. Keeping it here for future reference.)
-    
-    # forecast_accuracy = pd.DataFrame()
-    # counter = list(range(len(db)))
-    # columns = list(db.columns)
-
-    # for i in counter:
-    #     db_list = []  # temporary container of weeks values.
-    #     if i < 7:  # 7 day forecast inc today, so len can't exceed 7
-    #         window = i
-    #         j = i
-    #     else:
-    #         window = 6
-    #         j = 6
-
-    #     # Start date at most recent row
-    #     actual_date = db.index[-1]  # start with the last day
-    #     window_date = actual_date - pd.DateOffset(
-    #         days=window)  # Number of days in the past can't be more than those forecast
-    #     row_0 = db.index[0]  # We want to end when window date is equal to row_0.
-
-    #     while window_date >= row_0:
-    #         true_temp = int(db.loc[actual_date][0])  # True temperature recorded on day
-    #         predicted_temp = int(db.loc[window_date][window])  # data predicted on value of window
-    #         difference = true_temp - predicted_temp
-    #         # loop
-    #         actual_date -= pd.DateOffset(days=1)  # take off 1 day.
-    #         window_date -= pd.DateOffset(days=1)  # take off 1 day.
-    #         # append
-    #         db_list.append(difference)
-    #         # Add list to df as series
-    #     forecast_accuracy[columns[j]] = pd.Series(db_list[::-1])  # Add list backwards.
-
-    # db.index = dates_index  # change the index back into string format
-    # forecast_accuracy.index = dates_index  # same index
     
     #################################
     # Persistence
