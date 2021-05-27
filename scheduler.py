@@ -28,13 +28,13 @@ def main():
     generate_heatmaps()  # Train, fit and save prophet forecasts.
     print('LOG: Complete - Predict Prophet Forecasts', '\n')
 
-    # print('LOG: Starting - Build Training Dataframe')
+    print('LOG: Starting - Build Training Dataframe')
     build_training_dataframe()  # Build and save the training data.
-    # print('LOG: Complete - Build Training Dataframe')
+    print('LOG: Complete - Build Training Dataframe')
 
-    # print('LOG: Starting - Predict Prophet Forecasts')
+    print('LOG: Starting - Predict Prophet Forecasts')
     build_prophet_forecaster()  # Train, fit and save prophet forecasts.
-    # print('LOG: Complete - Predict Prophet Forecasts', '\n')
+    print('LOG: Complete - Predict Prophet Forecasts', '\n')
     
     print('LOG: Scheduler Complete')
 
