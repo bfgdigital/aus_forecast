@@ -3,14 +3,14 @@
 import os
 import sys
 
-from tasks.retrieve_forecasts_from_BOM import retrieve_forecasts
-from tasks.check_db_integrity import integrity_check
-from tasks.forecast_dataframe import build_forecast_dataframe
-from training_data.training_weather import build_training_dataframe
-from tasks.generate_heatmaps import generate_heatmaps
-from tasks.prophet_forecaster import build_prophet_forecaster
+from tasks.1_retrieve_forecasts_from_BOM import retrieve_forecasts
+from tasks.2_check_db_integrity import integrity_check
+from tasks.3_forecast_dataframe import build_forecast_dataframe
+from tasks.4_generate_heatmaps import generate_heatmaps
+from training_data.1_training_weather import build_training_dataframe
+from tasks.5_prophet_forecaster import build_prophet_forecaster
 
-
+# Runs the following tasks daily.
 def main():
     print('LOG: Starting - Retrieve Forecasts from API')
     retrieve_forecasts()  # Update the database.
