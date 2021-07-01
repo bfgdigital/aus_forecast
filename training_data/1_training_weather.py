@@ -35,7 +35,7 @@ def load_data():
     return temp_max, temp_min, rainfall, solar_exposure
 
 
-def rainfall_eda(rainfall):
+def rainfall_eda(rainfall: int) -> pd.DataFrame:
     rainfall.columns = map(str.lower, rainfall.columns)  # Lower names
     rainfall.drop(['bureau of meteorology station number', 'period over which rainfall was measured (days)'], axis=1,
                   inplace=True)
@@ -45,7 +45,7 @@ def rainfall_eda(rainfall):
     return rainfall
 
 
-def temp_max_eda(temp_max):
+def temp_max_eda(temp_max: int) -> pd.DataFrame:
     temp_max.columns = map(str.lower, temp_max.columns)
     temp_max.drop(['bureau of meteorology station number', 'days of accumulation of maximum temperature'], axis=1,
                   inplace=True)
@@ -55,7 +55,7 @@ def temp_max_eda(temp_max):
     return temp_max
 
 
-def temp_min_eda(temp_min):
+def temp_min_eda(temp_min: int) -> pd.DataFrame:
     temp_min.columns = map(str.lower, temp_min.columns)
     temp_min.drop(['bureau of meteorology station number', 'days of accumulation of minimum temperature'], axis=1,
                   inplace=True)
@@ -65,7 +65,7 @@ def temp_min_eda(temp_min):
     return temp_min
 
 
-def solar_exposure_eda(solar_exposure):
+def solar_exposure_eda(solar_exposure: int) -> pd.DataFrame:
     solar_exposure.columns = map(str.lower, solar_exposure.columns)
     solar_exposure.drop(['bureau of meteorology station number'], axis=1, inplace=True)
     solar_exposure['date'] = pd.to_datetime(solar_exposure[['year', 'month', 'day']])
@@ -74,7 +74,7 @@ def solar_exposure_eda(solar_exposure):
     return solar_exposure
 
 
-def weather_training_data_assembly(temp_max, temp_min, rainfall, solar_exposure):
+def weather_training_data_assembly(temp_max, temp_min, rainfall, solar_exposure: pd.DataFrame) -> pd.DataFrame:
     weather_training_data = pd.merge(solar_exposure, temp_max, how='left', left_index=True, right_index=True,
                                      suffixes=('_se', '_maxt'))
     weather_training_data = pd.merge(weather_training_data, temp_min, how='left', left_index=True, right_index=True,
@@ -98,7 +98,7 @@ def weather_training_data_assembly(temp_max, temp_min, rainfall, solar_exposure)
     return weather_training_data
 
 
-def data_imputer(weather_training_data):
+def data_imputer(weather_training_data: pd.DataFrame) -> pd.DataFrame:
     # This is experimental, but seems to work well.
     imp = IterativeImputer(max_iter=10, random_state=0)
     imp.fit(weather_training_data)
@@ -117,7 +117,7 @@ def data_imputer(weather_training_data):
 # Fit Pipeline
 ##############
 
-def eda_pipe(temp_max, temp_min, rainfall, solar_exposure):  # pass data files
+def eda_pipe(temp_max, temp_min, rainfall, solar_exposure: pd.DataFrame) -> pd.DataFrame:  # pass data files
     rainfall_eda(rainfall)
     temp_max_eda(temp_max)
     temp_min_eda(temp_min)
@@ -140,7 +140,7 @@ def eda_pipe(temp_max, temp_min, rainfall, solar_exposure):  # pass data files
 # Saving to CSV
 ##########################
 
-def save_to_csv(imputed_weather_training_data):
+def save_to_csv(imputed_weather_training_data: pd.DataFrame):
     imputed_weather_training_data.to_csv(datafile_path, index=True)  # Save to csv (db is too slow)
     print('Training data saved to file','\n')
 
@@ -150,7 +150,6 @@ def save_to_csv(imputed_weather_training_data):
 #######
 
 def build_training_dataframe():
-
     temp_max, temp_min, rainfall, solar_exposure = load_data()
     eda_pipe(temp_max, temp_min, rainfall, solar_exposure)
     weather_training_data = weather_training_data_assembly(temp_max, temp_min, rainfall, solar_exposure)
