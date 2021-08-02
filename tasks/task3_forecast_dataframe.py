@@ -51,11 +51,13 @@ def build_forecast_dataframe():
         if invalid_val is np.nan:
             mask = ~np.isnan(a)  # Reversing logical value ~x is equivalent to (-x) - 1
         else:
-            mask = a! = invalid_val
-            justified_mask = np.sort(mask,axis=axis)
+            mask = a!=invalid_val
+        justified_mask = np.sort(mask,axis=axis)
+        
         if (side=='up') | (side=='left'):
             justified_mask = np.flip(justified_mask,axis=axis)
-            out = np.full(a.shape, invalid_val)
+        out = np.full(a.shape, invalid_val)
+        
         if axis==1:
             out[justified_mask] = a[mask]
         else:
