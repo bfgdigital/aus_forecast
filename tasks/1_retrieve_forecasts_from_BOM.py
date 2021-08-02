@@ -2,40 +2,31 @@
 
 import pandas as pd  # Structure and Dataframes
 import datetime as dt  # Time Functions
-from datetime import datetime, timedelta
+from datetime import datetime
 import requests  # API fetching
 
-# SQL & Credentials Mgnt
+# SQL & Credentials Management
 import sqlalchemy
 import os
-import dotenv  # Protect db creds
+import dotenv  # Protect db credentials
 
 dotenv.load_dotenv()
 
-def fetch_db():
+
+def fetch_db() -> pd.DataFrame:
     print('LOG: Fetching database')
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    engine = sqlalchemy.create_engine(DATABASE_URL)
+    database_url = os.environ.get('DATABASE_URL')
+    engine = sqlalchemy.create_engine(database_url)
     # Require whole db.
-    db = pd.read_sql('SELECT * FROM bom-weather ORDER BY "issue" DESC', engine)
+    # db = pd.read_sql('SELECT * FROM bom-weather ORDER BY "issue" DESC', engine)
+    db = pd.read_sql_table("bom-weather", engine)
     return db, engine
 
 
 def build_dates_index(db):  # Build index checklist
     dates_index = list(set(db['issue']))  # create string based index
-    dates_index.sort(key=lambda date: datetime.strptime(
-        date, '%Y-%m-%d'))  # Sort string indexes as dates
+    dates_index.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))  # Sort string indexes as dates
     return dates_index
-
-
-def fetch_db() -> pd.DataFrame:
-    print('LOG: Fetching database')
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    engine = sqlalchemy.create_engine(DATABASE_URL)
-    # Require whole db.
-    # SELECT * FROM "bom-weather" ORDER BY issue DESC'
-    db = pd.read_sql_table("bom-weather", engine)
-    return db, engine
 
 
 def rain(df: pd.DataFrame) -> pd.DataFrame:
@@ -57,27 +48,24 @@ def astronomical(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def metadata(df: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
-    issue = pd.Series([TODAY for i in range(len(df))], name='issue')
+    issue = pd.Series([TODAY for _ in range(len(df))], name='issue')
     forecast = pd.Series([i for i in range(len(df))], name='forecast')
-    location = pd.Series([name for i in range(len(df))], name='location')
+    location = pd.Series([name for _ in range(len(df))], name='location')
     date = df['date']
-    now = df['now'].apply(pd.Series).drop(
-        0, inplace=True, axis=1)  # drop the 0's
+    now = df['now'].apply(pd.Series).drop(0, inplace=True, axis=1)  # drop the 0's
     forecast_metadata = df2
-    metadata = pd.concat(
-        [issue, forecast, location, now, forecast_metadata], axis=1)
+    metadata = pd.concat([issue, forecast, location, now, forecast_metadata], axis=1)
     return metadata
 
 
 def forecast(df, df2) -> pd.DataFrame:
     non_nested = df[['temp_max', 'temp_min', 'extended_text',
                      'icon_descriptor', 'short_text', 'fire_danger']]
-    forecast_data = pd.concat([non_nested, rain(df), uv(
-        df), astronomical(df), metadata(df, df2)], axis=1)
+    forecast_data = pd.concat([non_nested, rain(df), uv(df), astronomical(df), metadata(df, df2)], axis=1)
     return forecast_data
-    
+
+
 def retrieve_forecasts():
-    
     db, engine = fetch_db()
     # Define Reference Times
     today = dt.date.today()
