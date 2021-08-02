@@ -1,29 +1,24 @@
 import pandas as pd
 import numpy as np
-import datetime as dt  # Time Functions
 from datetime import datetime
 import sqlalchemy  # SQL and Credentials
 import os
 import io
-import dotenv  # Protect db creds
+import dotenv  # Protect db credentials
 
 dotenv.load_dotenv()
 
 # SQL Connection
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# stores the db in memory, slightly more efficient.
+
 def get_database_connection():
-    
     print('LOG: Fetching database...')
-    
     engine = sqlalchemy.create_engine(DATABASE_URL)
     query = 'SELECT issue, MAX(CASE WHEN forecast = 0 THEN temp_max END) AS "today+0", MAX(CASE WHEN forecast = 1 THEN temp_max END) AS "today+1", MAX(CASE WHEN forecast = 2 THEN temp_max END) AS "today+2", MAX(CASE WHEN forecast = 3 THEN temp_max END) AS "today+3", MAX(CASE WHEN forecast = 4 THEN temp_max END) AS "today+4", MAX(CASE WHEN forecast = 5 THEN temp_max END) AS "today+5", MAX(CASE WHEN forecast = 6 THEN temp_max END) AS "today+6" FROM "bom-weather" GROUP BY issue ORDER BY issue'
 
-    # Store db in memory for speed up?
-    copy_sql = "COPY ({query}) TO STDOUT WITH CSV {head}".format(
-        query=query, head="HEADER"
-    )
+    # stores the db in memory, slightly more efficient.
+    copy_sql = "COPY ({query}) TO STDOUT WITH CSV {head}".format(query=query, head="HEADER")
     conn = engine.raw_connection()
     cur = conn.cursor()
     store = io.StringIO()
@@ -35,9 +30,10 @@ def get_database_connection():
     query2 = 'SELECT extended_text FROM "bom-weather" ORDER BY issue DESC LIMIT 1'
     last_row = pd.read_sql_query(query2, engine)
     
-    # Incase whole db is req.
-    #     mem_stored_db = pd.read_sql('bom-weather', engine)  
-    #     mem_stored_db = mem_stored_db.sort_values(['issue', 'forecast', 'date'], ascending=[True, True, True]) # sort the dataframe
+    # In case whole db is req.
+    # mem_stored_db = pd.read_sql('bom-weather', engine)
+    # mem_stored_db = mem_stored_db.sort_values(['issue', 'forecast', 'date'],
+    # ascending=[True, True, True]) # sort the dataframe
     
     return mem_stored_db, last_row
 
@@ -50,8 +46,6 @@ def build_dates_index(db):  # Build index checklist
 
 
 def build_forecast_dataframe():
-    
-
     # Justify function to shift NaN's to correct side of db.
     def justify(a, invalid_val=0, axis=1, side='left'):
         if invalid_val is np.nan:
@@ -59,9 +53,11 @@ def build_forecast_dataframe():
         else:
             mask = a!=invalid_val
         justified_mask = np.sort(mask,axis=axis)
+        
         if (side=='up') | (side=='left'):
             justified_mask = np.flip(justified_mask,axis=axis)
-        out = np.full(a.shape, invalid_val) 
+        out = np.full(a.shape, invalid_val)
+        
         if axis==1:
             out[justified_mask] = a[mask]
         else:

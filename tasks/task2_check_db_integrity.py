@@ -1,40 +1,37 @@
-# Checking the intergrity of the forecast API data and imputing as necessary.
+# Checking the integrity of the forecast API data and imputing as necessary.
 
 import pandas as pd  # Structure and Dataframes
-import datetime as dt  # Time Functions
 from datetime import datetime, timedelta
-import requests  # API fetching
 
-# SQL & Credentials Mgnt
+# SQL & Credentials Management
 import sqlalchemy
 import os
-import dotenv  # Protect db creds
+import dotenv  # Protect db credentials
 
 dotenv.load_dotenv()
 
+
 def fetch_db():
     print('LOG: Fetching database...')
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    engine = sqlalchemy.create_engine(DATABASE_URL)
-    db = pd.read_sql('bom-weather', engine) # Need the whole db.
+    database_url = os.environ.get('DATABASE_URL')
+    engine = sqlalchemy.create_engine(database_url)
+    db = pd.read_sql('bom-weather', engine)  # Need the whole db.
     return db, engine
 
-def integrity_check(): # Impute any missing data.
-    
+
+def integrity_check():  # Impute any missing data.
     db, engine = fetch_db()
     db_check = len(db)
-    
-    def build_dates_index(db): # Build index checklist
+
+    def build_dates_index(db):  # Build index checklist
         dates_index = list(set(db['issue']))  # create string based index
         dates_index.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d'))  # Sort string indexes as dates
         return dates_index
     
     print('LOG: Checking for missing data')
-    
     dates_index = build_dates_index(db)  # Get a list of issue dates.
-    
-    missing_dates = pd.date_range(start = dates_index[0],
-                      end = dates_index[-1]).difference(pd.to_datetime(dates_index))  # [::-1] (Reverse?)   
+    missing_dates = pd.date_range(start=dates_index[0], end=dates_index[-1])\
+        .difference(pd.to_datetime(dates_index))  # [::-1] (Reverse?)
     
     print('LOG: Checking for missing dates')
     for date in missing_dates:
@@ -53,7 +50,7 @@ def integrity_check(): # Impute any missing data.
             print(f'len of part1 = {len(part1)}')
             print(f'len of part2 = {len(part2)}')
             new_rows = pd.concat([part1, part2], axis=0)
-            new_rows['forecast'] = [0,1,2,3,4,5,6]
+            new_rows['forecast'] = [0, 1, 2, 3, 4, 5, 6]
             new_rows['issue'] = str_date
             db = db.append(new_rows)
         except:
@@ -65,20 +62,20 @@ def integrity_check(): # Impute any missing data.
             print(f'len of part1 = {len(part1)}')
             print(f'len of part2 = {len(part2)}')
             new_rows = pd.concat([part1, part2], axis=0)
-            new_rows['forecast'] = [0,1,2,3,4,5,6]
+            new_rows['forecast'] = [0, 1, 2, 3, 4, 5, 6]
             new_rows['issue'] = str_date
             db = db.append(new_rows)
         except:
             # When there are dates either side of date in missing_dates
             # this solution cannot work.
-            # Needs a wider excalation loop that can cover
+            # Needs a wider escalation loop that can cover
             # multiple days before and behind.
             # OR we can run it multiple times (start to finish)
             print('\n!!! Missing dates integrity check failed!!!')
             print(f'{str_date}\n')
             continue
     
-    dates_index = build_dates_index(db) # Rebuild a list of issue dates.
+    dates_index = build_dates_index(db)  # Rebuild a list of issue dates.
     
     print('LOG: Checking for missing forecasts')
     for date in dates_index:
@@ -93,8 +90,8 @@ def integrity_check(): # Impute any missing data.
             except:
                 print(f'LOG: No future date available for: {date}')
 
-    db.drop_duplicates(subset=db.columns.difference(['date']), keep='last', inplace=True,
-               ignore_index=True)  # In the case of pulling x2 in one day.
+    # In the case of pulling x2 in one day.
+    db.drop_duplicates(subset=db.columns.difference(['date']), keep='last', inplace=True, ignore_index=True)
     db = db.reindex(sorted(db.columns), axis=1)  # Sort Cols alphabetically.
     
     # If no changes are made, do not write to file.
