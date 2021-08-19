@@ -1,13 +1,12 @@
-httpstan==4.4.2
 SQLAlchemy
-fbprophet
-matplotlib
 numpy
-pandas
 psycopg2-binary
 pystan==2.19.1.1
+matplotlib
+pandas
 python-dotenv
 requests
 scikit-learn
 seaborn
 streamlit
+fbprophet
