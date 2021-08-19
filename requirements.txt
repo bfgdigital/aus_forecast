@@ -1,5 +1,5 @@
 httpstan==4.4.2
-dill
+SQLAlchemy
 fbprophet
 matplotlib
 numpy
@@ -10,5 +10,4 @@ python-dotenv
 requests
 scikit-learn
 seaborn
-SQLAlchemy
 streamlit
